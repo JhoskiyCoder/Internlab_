@@ -1,13 +1,10 @@
 from functools import wraps
-
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import PermissionDenied
 
 
 class RoleRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Base mixin for role-restricted class-based views."""
-
     allowed_roles: tuple[str, ...] = ()
 
     def test_func(self):
@@ -28,9 +25,9 @@ class EmployerRequiredMixin(RoleRequiredMixin):
 
 
 def role_required(*roles):
-    """Function-based view decorator for role access."""
 
     def decorator(view_func):
+
         @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
             if not request.user.is_authenticated:

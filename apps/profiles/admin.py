@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from .models import EmployerProfile, StudentProfile, StudentProject
 
 
@@ -17,6 +16,18 @@ class EmployerProfileAdmin(admin.ModelAdmin):
 
 @admin.register(StudentProject)
 class StudentProjectAdmin(admin.ModelAdmin):
-    list_display = ("title", "student_profile", "role", "start_date", "end_date", "is_current")
-    search_fields = ("title", "role", "student_profile__full_name", "student_profile__user__email")
+    list_display = (
+        "title",
+        "student_profile",
+        "role",
+        "start_date",
+        "end_date",
+        "is_current",
+    )
+    search_fields = (
+        "title",
+        "role",
+        "student_profile__full_name",
+        "student_profile__user__email",
+    )
     list_filter = ("is_current",)

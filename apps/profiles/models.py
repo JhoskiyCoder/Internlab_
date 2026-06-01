@@ -3,7 +3,11 @@ from django.db import models
 
 
 class StudentProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="student_profile")
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="student_profile",
+    )
     full_name = models.CharField(max_length=255)
     avatar = models.ImageField(upload_to="avatars/students/", blank=True, null=True)
     phone_number = models.CharField(max_length=32, blank=True)
@@ -24,7 +28,11 @@ class StudentProfile(models.Model):
 
 
 class EmployerProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="employer_profile")
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="employer_profile",
+    )
     company_name = models.CharField(max_length=255)
     logo = models.ImageField(upload_to="avatars/employers/", blank=True, null=True)
     company_description = models.TextField()
@@ -41,7 +49,9 @@ class EmployerProfile(models.Model):
 
 
 class StudentProject(models.Model):
-    student_profile = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="projects")
+    student_profile = models.ForeignKey(
+        StudentProfile, on_delete=models.CASCADE, related_name="projects"
+    )
     title = models.CharField(max_length=255)
     role = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)

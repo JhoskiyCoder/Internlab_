@@ -1,26 +1,20 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-
 from .models import EmployerProfile, StudentProfile
 
 
 class StudentProfileFlowTests(TestCase):
+
     def setUp(self):
         self.student_1 = get_user_model().objects.create_user(
-            email="student1@example.com",
-            password="StrongPass123!",
-            role="student",
+            email="student1@example.com", password="StrongPass123!", role="student"
         )
         self.student_2 = get_user_model().objects.create_user(
-            email="student2@example.com",
-            password="StrongPass123!",
-            role="student",
+            email="student2@example.com", password="StrongPass123!", role="student"
         )
         self.employer = get_user_model().objects.create_user(
-            email="employer@example.com",
-            password="StrongPass123!",
-            role="employer",
+            email="employer@example.com", password="StrongPass123!", role="employer"
         )
 
     def test_student_can_create_own_profile(self):
@@ -37,7 +31,6 @@ class StudentProfileFlowTests(TestCase):
             },
             follow=True,
         )
-
         self.assertEqual(response.status_code, 200)
         profile = StudentProfile.objects.get(user=self.student_1)
         self.assertEqual(profile.full_name, "Alice Student")
@@ -61,7 +54,6 @@ class StudentProfileFlowTests(TestCase):
             bio="",
             contact_info="",
         )
-
         self.client.force_login(self.student_2)
         self.client.post(
             reverse("profiles:student_profile_edit"),
@@ -74,10 +66,8 @@ class StudentProfileFlowTests(TestCase):
                 "contact_info": "@two",
             },
         )
-
         self.assertEqual(
-            StudentProfile.objects.get(user=self.student_1).full_name,
-            "Student One",
+            StudentProfile.objects.get(user=self.student_1).full_name, "Student One"
         )
         self.assertEqual(
             StudentProfile.objects.get(user=self.student_2).full_name,
@@ -91,21 +81,16 @@ class StudentProfileFlowTests(TestCase):
 
 
 class EmployerProfileFlowTests(TestCase):
+
     def setUp(self):
         self.employer_1 = get_user_model().objects.create_user(
-            email="employer1@example.com",
-            password="StrongPass123!",
-            role="employer",
+            email="employer1@example.com", password="StrongPass123!", role="employer"
         )
         self.employer_2 = get_user_model().objects.create_user(
-            email="employer2@example.com",
-            password="StrongPass123!",
-            role="employer",
+            email="employer2@example.com", password="StrongPass123!", role="employer"
         )
         self.student = get_user_model().objects.create_user(
-            email="student@example.com",
-            password="StrongPass123!",
-            role="student",
+            email="student@example.com", password="StrongPass123!", role="student"
         )
 
     def test_employer_can_create_own_profile(self):
@@ -120,7 +105,6 @@ class EmployerProfileFlowTests(TestCase):
             },
             follow=True,
         )
-
         self.assertEqual(response.status_code, 200)
         profile = EmployerProfile.objects.get(user=self.employer_1)
         self.assertEqual(profile.company_name, "Tech LLC")
@@ -140,7 +124,6 @@ class EmployerProfileFlowTests(TestCase):
             contact_email="two@example.com",
             website="",
         )
-
         self.client.force_login(self.employer_2)
         self.client.post(
             reverse("profiles:employer_profile_edit"),
@@ -151,7 +134,6 @@ class EmployerProfileFlowTests(TestCase):
                 "website": "",
             },
         )
-
         self.assertEqual(
             EmployerProfile.objects.get(user=self.employer_1).company_name,
             "Company One",

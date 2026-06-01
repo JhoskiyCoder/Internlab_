@@ -1,9 +1,9 @@
 from django import forms
-
 from .models import Application
 
 
 class ApplicationCreateForm(forms.ModelForm):
+
     class Meta:
         model = Application
         fields = ("cover_letter",)
@@ -21,6 +21,7 @@ class ApplicationCreateForm(forms.ModelForm):
 
 
 class ApplicationStatusForm(forms.ModelForm):
+
     class Meta:
         model = Application
         fields = ("status",)

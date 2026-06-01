@@ -1,19 +1,16 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-
 from apps.profiles.models import EmployerProfile, StudentProfile
 from apps.vacancies.models import Vacancy
-
 from .models import Application
 
 
 class StudentApplicationFlowTests(TestCase):
+
     def setUp(self):
         self.student_user = get_user_model().objects.create_user(
-            email="student@example.com",
-            password="StrongPass123!",
-            role="student",
+            email="student@example.com", password="StrongPass123!", role="student"
         )
         self.student_profile = StudentProfile.objects.create(
             user=self.student_user,
@@ -24,11 +21,8 @@ class StudentApplicationFlowTests(TestCase):
             bio="",
             contact_info="",
         )
-
         employer_user = get_user_model().objects.create_user(
-            email="employer@example.com",
-            password="StrongPass123!",
-            role="employer",
+            email="employer@example.com", password="StrongPass123!", role="employer"
         )
         self.employer_profile = EmployerProfile.objects.create(
             user=employer_user,
@@ -37,7 +31,6 @@ class StudentApplicationFlowTests(TestCase):
             contact_email="hr@tech.example",
             website="",
         )
-
         self.published_vacancy = Vacancy.objects.create(
             employer=self.employer_profile,
             title="Backend Intern",
@@ -73,7 +66,6 @@ class StudentApplicationFlowTests(TestCase):
             {"cover_letter": "I have Python and Django experience."},
             follow=True,
         )
-
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
             Application.objects.filter(
@@ -84,23 +76,26 @@ class StudentApplicationFlowTests(TestCase):
         )
 
     def test_student_cannot_apply_twice(self):
-        Application.objects.create(student=self.student_profile, vacancy=self.published_vacancy, cover_letter="First")
-
+        Application.objects.create(
+            student=self.student_profile,
+            vacancy=self.published_vacancy,
+            cover_letter="First",
+        )
         self.client.force_login(self.student_user)
         self.client.post(
             reverse("applications:student_apply", args=[self.published_vacancy.pk]),
             {"cover_letter": "Second"},
             follow=True,
         )
-
         self.assertEqual(
-            Application.objects.filter(student=self.student_profile, vacancy=self.published_vacancy).count(),
+            Application.objects.filter(
+                student=self.student_profile, vacancy=self.published_vacancy
+            ).count(),
             1,
         )
 
     def test_closed_or_archived_vacancies_reject_applications(self):
         self.client.force_login(self.student_user)
-
         closed_response = self.client.post(
             reverse("applications:student_apply", args=[self.closed_vacancy.pk]),
             {"cover_letter": "Attempt closed"},
@@ -111,19 +106,21 @@ class StudentApplicationFlowTests(TestCase):
             {"cover_letter": "Attempt archived"},
             follow=True,
         )
-
         self.assertEqual(closed_response.status_code, 404)
         self.assertEqual(archived_response.status_code, 404)
-        self.assertFalse(Application.objects.filter(vacancy=self.closed_vacancy).exists())
-        self.assertFalse(Application.objects.filter(vacancy=self.archived_vacancy).exists())
+        self.assertFalse(
+            Application.objects.filter(vacancy=self.closed_vacancy).exists()
+        )
+        self.assertFalse(
+            Application.objects.filter(vacancy=self.archived_vacancy).exists()
+        )
 
 
 class EmployerApplicationFlowTests(TestCase):
+
     def setUp(self):
         self.student_user = get_user_model().objects.create_user(
-            email="student2@example.com",
-            password="StrongPass123!",
-            role="student",
+            email="student2@example.com", password="StrongPass123!", role="student"
         )
         self.student_profile = StudentProfile.objects.create(
             user=self.student_user,
@@ -134,11 +131,8 @@ class EmployerApplicationFlowTests(TestCase):
             bio="",
             contact_info="",
         )
-
         self.employer_user_1 = get_user_model().objects.create_user(
-            email="emp1@example.com",
-            password="StrongPass123!",
-            role="employer",
+            email="emp1@example.com", password="StrongPass123!", role="employer"
         )
         self.employer_profile_1 = EmployerProfile.objects.create(
             user=self.employer_user_1,
@@ -147,11 +141,8 @@ class EmployerApplicationFlowTests(TestCase):
             contact_email="one@example.com",
             website="",
         )
-
         self.employer_user_2 = get_user_model().objects.create_user(
-            email="emp2@example.com",
-            password="StrongPass123!",
-            role="employer",
+            email="emp2@example.com", password="StrongPass123!", role="employer"
         )
         self.employer_profile_2 = EmployerProfile.objects.create(
             user=self.employer_user_2,
@@ -160,7 +151,6 @@ class EmployerApplicationFlowTests(TestCase):
             contact_email="two@example.com",
             website="",
         )
-
         self.vacancy_1 = Vacancy.objects.create(
             employer=self.employer_profile_1,
             title="Role One",
@@ -179,14 +169,16 @@ class EmployerApplicationFlowTests(TestCase):
             internship_type=Vacancy.InternshipType.REMOTE,
             status=Vacancy.Status.PUBLISHED,
         )
-
-        self.app_own = Application.objects.create(student=self.student_profile, vacancy=self.vacancy_1, cover_letter="hello")
-        self.app_other = Application.objects.create(student=self.student_profile, vacancy=self.vacancy_2, cover_letter="hello")
+        self.app_own = Application.objects.create(
+            student=self.student_profile, vacancy=self.vacancy_1, cover_letter="hello"
+        )
+        self.app_other = Application.objects.create(
+            student=self.student_profile, vacancy=self.vacancy_2, cover_letter="hello"
+        )
 
     def test_employer_sees_only_own_vacancy_applications(self):
         self.client.force_login(self.employer_user_1)
         response = self.client.get(reverse("applications:employer_list"))
-
         self.assertContains(response, "Role One")
         self.assertNotContains(response, "Role Two")
 
@@ -197,7 +189,6 @@ class EmployerApplicationFlowTests(TestCase):
             {"status": Application.Status.ACCEPTED},
             follow=True,
         )
-
         self.app_own.refresh_from_db()
         self.assertEqual(self.app_own.status, Application.Status.ACCEPTED)
 
@@ -207,5 +198,4 @@ class EmployerApplicationFlowTests(TestCase):
             reverse("applications:employer_detail", args=[self.app_other.pk]),
             {"status": Application.Status.REJECTED},
         )
-
         self.assertEqual(response.status_code, 404)

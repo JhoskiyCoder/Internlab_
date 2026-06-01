@@ -1,5 +1,4 @@
 from django.urls import path
-
 from .views import (
     employer_profile_create,
     employer_profile_detail,
@@ -10,7 +9,6 @@ from .views import (
 )
 
 app_name = "profiles"
-
 urlpatterns = [
     path("student/", student_profile_detail, name="student_profile_detail"),
     path("student/create/", student_profile_create, name="student_profile_create"),

@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
-
 from apps.applications.models import Application
 from apps.matching.services import get_recommended_vacancies
 from apps.profiles.models import EmployerProfile, StudentProfile
@@ -11,30 +10,44 @@ from apps.vacancies.models import Vacancy, VacancySkill
 
 class Command(BaseCommand):
     help = "Создать/обновить demo-данные для демонстрации дипломного проекта InternLAB."
-
     DEMO_PASSWORD = "DemoPass123!"
-
     SKILL_SPECS = [
         ("Python", Skill.Category.BACKEND, "Язык для backend и data-задач."),
         ("Django", Skill.Category.BACKEND, "Backend-фреймворк для Django monolith."),
         ("JavaScript", Skill.Category.FRONTEND, "Базовый язык frontend-разработки."),
-        ("TypeScript", Skill.Category.FRONTEND, "Типизированная разработка frontend-приложений."),
+        (
+            "TypeScript",
+            Skill.Category.FRONTEND,
+            "Типизированная разработка frontend-приложений.",
+        ),
         ("React", Skill.Category.FRONTEND, "Библиотека для UI-компонентов."),
         ("Next.js", Skill.Category.FRONTEND, "Фреймворк для React-приложений."),
         ("HTML", Skill.Category.FRONTEND, "Разметка веб-интерфейсов."),
         ("CSS", Skill.Category.FRONTEND, "Стилизация пользовательских интерфейсов."),
         ("HTML/CSS", Skill.Category.FRONTEND, "Базовая верстка интерфейсов."),
-        ("Node.js", Skill.Category.BACKEND, "Backend-разработка на JavaScript runtime."),
+        (
+            "Node.js",
+            Skill.Category.BACKEND,
+            "Backend-разработка на JavaScript runtime.",
+        ),
         ("Java", Skill.Category.BACKEND, "Backend-разработка корпоративных сервисов."),
         ("SQL", Skill.Category.DATA_SCIENCE, "Работа с данными и запросами."),
-        ("PostgreSQL", Skill.Category.BACKEND, "Реляционная СУБД для backend-сервисов."),
+        (
+            "PostgreSQL",
+            Skill.Category.BACKEND,
+            "Реляционная СУБД для backend-сервисов.",
+        ),
         ("Git", Skill.Category.DEVOPS, "Система контроля версий."),
         ("Docker", Skill.Category.DEVOPS, "Контейнеризация приложений."),
         ("Kubernetes", Skill.Category.DEVOPS, "Оркестрация контейнеров."),
         ("Linux", Skill.Category.DEVOPS, "Администрирование и серверная среда."),
         ("AWS", Skill.Category.DEVOPS, "Базовая работа с облачной инфраструктурой."),
         ("REST API", Skill.Category.BACKEND, "Проектирование веб-API."),
-        ("HTTP", Skill.Category.CORE_SKILLS, "Понимание протокола HTTP и web-взаимодействия."),
+        (
+            "HTTP",
+            Skill.Category.CORE_SKILLS,
+            "Понимание протокола HTTP и web-взаимодействия.",
+        ),
         ("Testing", Skill.Category.BACKEND, "Основы тестирования приложений."),
         ("Algorithms", Skill.Category.BACKEND, "Алгоритмы и структуры данных."),
         ("Kotlin", Skill.Category.MOBILE, "Язык разработки Android-приложений."),
@@ -42,13 +55,24 @@ class Command(BaseCommand):
         ("CI/CD", Skill.Category.DEVOPS, "Автоматизация сборки и деплоя."),
         ("Pandas", Skill.Category.DATA_SCIENCE, "Обработка и анализ табличных данных."),
         ("NumPy", Skill.Category.DATA_SCIENCE, "Численные вычисления в Python."),
-        ("Scikit-learn", Skill.Category.MACHINE_LEARNING, "Классические ML-модели и пайплайны."),
+        (
+            "Scikit-learn",
+            Skill.Category.MACHINE_LEARNING,
+            "Классические ML-модели и пайплайны.",
+        ),
         ("TensorFlow", Skill.Category.MACHINE_LEARNING, "Фреймворк для deep learning."),
-        ("PyTorch", Skill.Category.MACHINE_LEARNING, "Фреймворк для deep learning и research."),
-        ("OpenCV", Skill.Category.MACHINE_LEARNING, "Компьютерное зрение и обработка изображений."),
+        (
+            "PyTorch",
+            Skill.Category.MACHINE_LEARNING,
+            "Фреймворк для deep learning и research.",
+        ),
+        (
+            "OpenCV",
+            Skill.Category.MACHINE_LEARNING,
+            "Компьютерное зрение и обработка изображений.",
+        ),
         ("Hugging Face", Skill.Category.MACHINE_LEARNING, "NLP-модели и трансформеры."),
     ]
-
     STUDENT_SPECS = [
         {
             "email": "student.alina@internlab.local",
@@ -91,7 +115,6 @@ class Command(BaseCommand):
             "contact_info": "Telegram: @daniyar_data",
         },
     ]
-
     EMPLOYER_SPECS = [
         {
             "email": "employer.neonsoft@internlab.local",
@@ -108,7 +131,6 @@ class Command(BaseCommand):
             "website": "https://cloudforge.example",
         },
     ]
-
     VACANCY_SPECS = [
         {
             "title": "Backend стажер (Python/Django)",
@@ -381,7 +403,6 @@ class Command(BaseCommand):
             "status": Vacancy.Status.PUBLISHED,
         },
     ]
-
     STUDENT_SKILL_LEVELS = {
         "Алина Кадырова": {
             "Python": 5,
@@ -431,7 +452,6 @@ class Command(BaseCommand):
             "Hugging Face": 3,
         },
     }
-
     VACANCY_SKILL_REQUIREMENTS = {
         "Backend стажер (Python/Django)": [
             ("Python", 4, 10, True),
@@ -639,7 +659,6 @@ class Command(BaseCommand):
             ("Scikit-learn", 3, 6, False),
         ],
     }
-
     APPLICATION_SPECS = [
         {
             "student": "Алина Кадырова",
@@ -708,39 +727,41 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if options["reset"]:
             self._reset_demo_data()
-
         self.stdout.write(self.style.WARNING("Создание/обновление demo-данных..."))
-
         skills = self._create_skills()
         employers = self._create_employers()
         students = self._create_students()
-
         self._sync_student_skills(students, skills)
         vacancies = self._create_vacancies(employers)
         self._sync_vacancy_requirements(vacancies, skills)
         self._sync_applications(students, vacancies)
-
         self.stdout.write(self.style.SUCCESS("Demo-данные успешно готовы."))
-        self.stdout.write(self.style.SUCCESS(f"Общий пароль для demo-аккаунтов: {self.DEMO_PASSWORD}"))
+        self.stdout.write(
+            self.style.SUCCESS(f"Общий пароль для demo-аккаунтов: {self.DEMO_PASSWORD}")
+        )
         self._print_demo_accounts()
         self._print_matching_preview(students)
 
     def _reset_demo_data(self):
         user_model = get_user_model()
-        demo_emails = [spec["email"] for spec in self.STUDENT_SPECS] + [spec["email"] for spec in self.EMPLOYER_SPECS]
+        demo_emails = [spec["email"] for spec in self.STUDENT_SPECS] + [
+            spec["email"] for spec in self.EMPLOYER_SPECS
+        ]
         deleted_objects, _ = user_model.objects.filter(email__in=demo_emails).delete()
-
-                                                                             
-        Vacancy.objects.filter(title__in=[spec["title"] for spec in self.VACANCY_SPECS]).delete()
-
-        self.stdout.write(self.style.WARNING(f"Reset выполнен. Удалено связанных объектов: {deleted_objects}"))
+        Vacancy.objects.filter(
+            title__in=[spec["title"] for spec in self.VACANCY_SPECS]
+        ).delete()
+        self.stdout.write(
+            self.style.WARNING(
+                f"Reset выполнен. Удалено связанных объектов: {deleted_objects}"
+            )
+        )
 
     def _create_skills(self):
         skills = {}
         for name, category, description in self.SKILL_SPECS:
             skill, _ = Skill.objects.update_or_create(
-                name=name,
-                defaults={"category": category, "description": description},
+                name=name, defaults={"category": category, "description": description}
             )
             skills[name] = skill
         return skills
@@ -748,7 +769,6 @@ class Command(BaseCommand):
     def _create_employers(self):
         user_model = get_user_model()
         employers = {}
-
         for spec in self.EMPLOYER_SPECS:
             user, _ = user_model.objects.update_or_create(
                 email=spec["email"],
@@ -756,7 +776,6 @@ class Command(BaseCommand):
             )
             user.set_password(self.DEMO_PASSWORD)
             user.save(update_fields=["password"])
-
             profile, _ = EmployerProfile.objects.update_or_create(
                 user=user,
                 defaults={
@@ -767,13 +786,11 @@ class Command(BaseCommand):
                 },
             )
             employers[spec["company_name"]] = profile
-
         return employers
 
     def _create_students(self):
         user_model = get_user_model()
         students = {}
-
         for spec in self.STUDENT_SPECS:
             user, _ = user_model.objects.update_or_create(
                 email=spec["email"],
@@ -781,7 +798,6 @@ class Command(BaseCommand):
             )
             user.set_password(self.DEMO_PASSWORD)
             user.save(update_fields=["password"])
-
             profile, _ = StudentProfile.objects.update_or_create(
                 user=user,
                 defaults={
@@ -795,16 +811,15 @@ class Command(BaseCommand):
                 },
             )
             students[spec["full_name"]] = profile
-
         return students
 
     def _sync_student_skills(self, students, skills):
         for student_name, skill_levels in self.STUDENT_SKILL_LEVELS.items():
             profile = students[student_name]
             expected_skill_ids = {skills[skill_name].id for skill_name in skill_levels}
-
-            StudentSkill.objects.filter(student_profile=profile).exclude(skill_id__in=expected_skill_ids).delete()
-
+            StudentSkill.objects.filter(student_profile=profile).exclude(
+                skill_id__in=expected_skill_ids
+            ).delete()
             for skill_name, level in skill_levels.items():
                 StudentSkill.objects.update_or_create(
                     student_profile=profile,
@@ -832,10 +847,12 @@ class Command(BaseCommand):
     def _sync_vacancy_requirements(self, vacancies, skills):
         for vacancy_title, requirements in self.VACANCY_SKILL_REQUIREMENTS.items():
             vacancy = vacancies[vacancy_title]
-            expected_skill_ids = {skills[skill_name].id for skill_name, _, _, _ in requirements}
-
-            VacancySkill.objects.filter(vacancy=vacancy).exclude(skill_id__in=expected_skill_ids).delete()
-
+            expected_skill_ids = {
+                skills[skill_name].id for skill_name, _, _, _ in requirements
+            }
+            VacancySkill.objects.filter(vacancy=vacancy).exclude(
+                skill_id__in=expected_skill_ids
+            ).delete()
             for skill_name, required_level, _weight, is_critical in requirements:
                 VacancySkill.objects.update_or_create(
                     vacancy=vacancy,
@@ -850,10 +867,9 @@ class Command(BaseCommand):
     def _sync_applications(self, students, vacancies):
         demo_student_ids = [profile.id for profile in students.values()]
         demo_vacancy_ids = [vacancy.id for vacancy in vacancies.values()]
-
-                                                                                     
-        Application.objects.filter(student_id__in=demo_student_ids, vacancy_id__in=demo_vacancy_ids).delete()
-
+        Application.objects.filter(
+            student_id__in=demo_student_ids, vacancy_id__in=demo_vacancy_ids
+        ).delete()
         for spec in self.APPLICATION_SPECS:
             Application.objects.update_or_create(
                 student=students[spec["student"]],
@@ -876,9 +892,13 @@ class Command(BaseCommand):
 
     def _print_matching_preview(self, students):
         self.stdout.write("")
-        self.stdout.write(self.style.SUCCESS("Preview рекомендаций (top-3 опубликованных вакансий):"))
+        self.stdout.write(
+            self.style.SUCCESS("Preview рекомендаций (top-3 опубликованных вакансий):")
+        )
         demo_published_titles = {
-            spec["title"] for spec in self.VACANCY_SPECS if spec["status"] == Vacancy.Status.PUBLISHED
+            spec["title"]
+            for spec in self.VACANCY_SPECS
+            if spec["status"] == Vacancy.Status.PUBLISHED
         }
         for full_name, profile in students.items():
             recommendations = [
@@ -888,5 +908,9 @@ class Command(BaseCommand):
             ][:3]
             self.stdout.write(f"  {full_name}:")
             for item in recommendations:
-                missing = ", ".join(item.missing_skills) if item.missing_skills else "нет"
-                self.stdout.write(f"    - {item.vacancy.title}: {item.score}% | не хватает: {missing}")
+                missing = (
+                    ", ".join(item.missing_skills) if item.missing_skills else "нет"
+                )
+                self.stdout.write(
+                    f"    - {item.vacancy.title}: {item.score}% | не хватает: {missing}"
+                )

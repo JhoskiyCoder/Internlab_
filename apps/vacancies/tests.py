@@ -1,31 +1,23 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-
 from apps.profiles.models import EmployerProfile, StudentProfile
 from apps.skills.models import Skill
-
 from .models import FavoriteVacancy, Vacancy, VacancySkill
 
 
 class EmployerVacancyFlowTests(TestCase):
+
     def setUp(self):
         self.employer_user_1 = get_user_model().objects.create_user(
-            email="emp1@example.com",
-            password="StrongPass123!",
-            role="employer",
+            email="emp1@example.com", password="StrongPass123!", role="employer"
         )
         self.employer_user_2 = get_user_model().objects.create_user(
-            email="emp2@example.com",
-            password="StrongPass123!",
-            role="employer",
+            email="emp2@example.com", password="StrongPass123!", role="employer"
         )
         self.student_user = get_user_model().objects.create_user(
-            email="student@example.com",
-            password="StrongPass123!",
-            role="student",
+            email="student@example.com", password="StrongPass123!", role="student"
         )
-
         self.employer_profile_1 = EmployerProfile.objects.create(
             user=self.employer_user_1,
             company_name="Company One",
@@ -40,7 +32,6 @@ class EmployerVacancyFlowTests(TestCase):
             contact_email="two@example.com",
             website="",
         )
-
         self.vacancy_1 = Vacancy.objects.create(
             employer=self.employer_profile_1,
             title="Backend Intern",
@@ -67,7 +58,6 @@ class EmployerVacancyFlowTests(TestCase):
             },
             follow=True,
         )
-
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
             Vacancy.objects.filter(
@@ -87,10 +77,8 @@ class EmployerVacancyFlowTests(TestCase):
             internship_type=Vacancy.InternshipType.HYBRID,
             status=Vacancy.Status.DRAFT,
         )
-
         self.client.force_login(self.employer_user_1)
         response = self.client.get(reverse("vacancies:employer_list"))
-
         self.assertContains(response, "Backend Intern")
         self.assertNotContains(response, "Other Vacancy")
 
@@ -104,37 +92,39 @@ class EmployerVacancyFlowTests(TestCase):
             internship_type=Vacancy.InternshipType.HYBRID,
             status=Vacancy.Status.DRAFT,
         )
-
         self.client.force_login(self.employer_user_1)
-        response = self.client.get(reverse("vacancies:employer_edit", args=[other_vacancy.pk]))
-
+        response = self.client.get(
+            reverse("vacancies:employer_edit", args=[other_vacancy.pk])
+        )
         self.assertEqual(response.status_code, 404)
 
     def test_employer_can_close_own_vacancy(self):
         self.client.force_login(self.employer_user_1)
-        self.client.post(reverse("vacancies:employer_close", args=[self.vacancy_1.pk]), follow=True)
-
+        self.client.post(
+            reverse("vacancies:employer_close", args=[self.vacancy_1.pk]), follow=True
+        )
         self.vacancy_1.refresh_from_db()
         self.assertEqual(self.vacancy_1.status, Vacancy.Status.CLOSED)
 
     def test_employer_can_publish_own_vacancy(self):
         self.client.force_login(self.employer_user_1)
-        self.client.post(reverse("vacancies:employer_publish", args=[self.vacancy_1.pk]), follow=True)
-
+        self.client.post(
+            reverse("vacancies:employer_publish", args=[self.vacancy_1.pk]), follow=True
+        )
         self.vacancy_1.refresh_from_db()
         self.assertEqual(self.vacancy_1.status, Vacancy.Status.PUBLISHED)
 
     def test_employer_can_archive_own_vacancy(self):
         self.client.force_login(self.employer_user_1)
-        self.client.post(reverse("vacancies:employer_archive", args=[self.vacancy_1.pk]), follow=True)
-
+        self.client.post(
+            reverse("vacancies:employer_archive", args=[self.vacancy_1.pk]), follow=True
+        )
         self.vacancy_1.refresh_from_db()
         self.assertEqual(self.vacancy_1.status, Vacancy.Status.ARCHIVED)
 
     def test_student_cannot_access_employer_vacancy_pages(self):
         self.client.force_login(self.student_user)
         response = self.client.get(reverse("vacancies:employer_list"))
-
         self.assertEqual(response.status_code, 403)
 
     def test_employer_can_add_required_skill_to_own_vacancy(self):
@@ -149,7 +139,6 @@ class EmployerVacancyFlowTests(TestCase):
             },
             follow=True,
         )
-
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
             VacancySkill.objects.filter(
@@ -169,7 +158,6 @@ class EmployerVacancyFlowTests(TestCase):
             weight=2,
             is_critical=False,
         )
-
         self.client.force_login(self.employer_user_1)
         response = self.client.post(
             reverse("vacancies:skill_add", args=[self.vacancy_1.pk]),
@@ -180,11 +168,12 @@ class EmployerVacancyFlowTests(TestCase):
                 "is_critical": True,
             },
         )
-
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "уже добавлен")
         self.assertEqual(
-            VacancySkill.objects.filter(vacancy=self.vacancy_1, skill=self.python_skill).count(),
+            VacancySkill.objects.filter(
+                vacancy=self.vacancy_1, skill=self.python_skill
+            ).count(),
             1,
         )
 
@@ -196,7 +185,6 @@ class EmployerVacancyFlowTests(TestCase):
             weight=1,
             is_critical=False,
         )
-
         self.client.force_login(self.employer_user_1)
         self.client.post(
             reverse("vacancies:skill_edit", args=[self.vacancy_1.pk, vacancy_skill.pk]),
@@ -213,9 +201,10 @@ class EmployerVacancyFlowTests(TestCase):
         self.assertEqual(vacancy_skill.required_level, 5)
         self.assertEqual(vacancy_skill.weight, 1)
         self.assertTrue(vacancy_skill.is_critical)
-
         self.client.post(
-            reverse("vacancies:skill_delete", args=[self.vacancy_1.pk, vacancy_skill.pk]),
+            reverse(
+                "vacancies:skill_delete", args=[self.vacancy_1.pk, vacancy_skill.pk]
+            ),
             follow=True,
         )
         self.assertFalse(VacancySkill.objects.filter(pk=vacancy_skill.pk).exists())
@@ -237,12 +226,16 @@ class EmployerVacancyFlowTests(TestCase):
             weight=2,
             is_critical=False,
         )
-
         self.client.force_login(self.employer_user_1)
-        add_response = self.client.get(reverse("vacancies:skill_add", args=[other_vacancy.pk]))
-        edit_response = self.client.get(reverse("vacancies:skill_edit", args=[other_vacancy.pk, other_skill.pk]))
-        delete_response = self.client.get(reverse("vacancies:skill_delete", args=[other_vacancy.pk, other_skill.pk]))
-
+        add_response = self.client.get(
+            reverse("vacancies:skill_add", args=[other_vacancy.pk])
+        )
+        edit_response = self.client.get(
+            reverse("vacancies:skill_edit", args=[other_vacancy.pk, other_skill.pk])
+        )
+        delete_response = self.client.get(
+            reverse("vacancies:skill_delete", args=[other_vacancy.pk, other_skill.pk])
+        )
         self.assertEqual(add_response.status_code, 404)
         self.assertEqual(edit_response.status_code, 404)
         self.assertEqual(delete_response.status_code, 404)
@@ -257,23 +250,26 @@ class EmployerVacancyFlowTests(TestCase):
             internship_type=Vacancy.InternshipType.REMOTE,
             status=Vacancy.Status.DRAFT,
         )
-
         self.client.force_login(self.employer_user_1)
-        publish_response = self.client.post(reverse("vacancies:employer_publish", args=[other_vacancy.pk]))
-        archive_response = self.client.post(reverse("vacancies:employer_archive", args=[other_vacancy.pk]))
-        close_response = self.client.post(reverse("vacancies:employer_close", args=[other_vacancy.pk]))
-
+        publish_response = self.client.post(
+            reverse("vacancies:employer_publish", args=[other_vacancy.pk])
+        )
+        archive_response = self.client.post(
+            reverse("vacancies:employer_archive", args=[other_vacancy.pk])
+        )
+        close_response = self.client.post(
+            reverse("vacancies:employer_close", args=[other_vacancy.pk])
+        )
         self.assertEqual(publish_response.status_code, 404)
         self.assertEqual(archive_response.status_code, 404)
         self.assertEqual(close_response.status_code, 404)
 
 
 class PublicVacancyListingTests(TestCase):
+
     def setUp(self):
         employer_user = get_user_model().objects.create_user(
-            email="emp@example.com",
-            password="StrongPass123!",
-            role="employer",
+            email="emp@example.com", password="StrongPass123!", role="employer"
         )
         employer_profile = EmployerProfile.objects.create(
             user=employer_user,
@@ -303,24 +299,25 @@ class PublicVacancyListingTests(TestCase):
 
     def test_public_list_shows_only_published(self):
         response = self.client.get(reverse("vacancies:public_list"))
-
         self.assertContains(response, "Published Vacancy")
         self.assertNotContains(response, "Draft Vacancy")
 
     def test_public_detail_available_only_for_published(self):
-        published_response = self.client.get(reverse("vacancies:public_detail", args=[self.published_vacancy.pk]))
-        draft_response = self.client.get(reverse("vacancies:public_detail", args=[self.draft_vacancy.pk]))
-
+        published_response = self.client.get(
+            reverse("vacancies:public_detail", args=[self.published_vacancy.pk])
+        )
+        draft_response = self.client.get(
+            reverse("vacancies:public_detail", args=[self.draft_vacancy.pk])
+        )
         self.assertEqual(published_response.status_code, 200)
         self.assertEqual(draft_response.status_code, 404)
 
 
 class StudentFavoriteVacancyTests(TestCase):
+
     def setUp(self):
         self.student_user = get_user_model().objects.create_user(
-            email="student-fav@example.com",
-            password="StrongPass123!",
-            role="student",
+            email="student-fav@example.com", password="StrongPass123!", role="student"
         )
         self.student_profile = StudentProfile.objects.create(
             user=self.student_user,
@@ -331,11 +328,8 @@ class StudentFavoriteVacancyTests(TestCase):
             bio="",
             contact_info="",
         )
-
         self.employer_user = get_user_model().objects.create_user(
-            email="employer-fav@example.com",
-            password="StrongPass123!",
-            role="employer",
+            email="employer-fav@example.com", password="StrongPass123!", role="employer"
         )
         self.employer_profile = EmployerProfile.objects.create(
             user=self.employer_user,
@@ -344,7 +338,6 @@ class StudentFavoriteVacancyTests(TestCase):
             contact_email="favorite@example.com",
             website="",
         )
-
         self.vacancy = Vacancy.objects.create(
             employer=self.employer_profile,
             title="Favorite Vacancy",
@@ -357,7 +350,6 @@ class StudentFavoriteVacancyTests(TestCase):
 
     def test_student_can_toggle_favorite(self):
         self.client.force_login(self.student_user)
-
         add_response = self.client.post(
             reverse("vacancies:toggle_favorite", args=[self.vacancy.pk]),
             {"next": reverse("vacancies:public_list")},
@@ -365,9 +357,10 @@ class StudentFavoriteVacancyTests(TestCase):
         )
         self.assertEqual(add_response.status_code, 200)
         self.assertTrue(
-            FavoriteVacancy.objects.filter(student_profile=self.student_profile, vacancy=self.vacancy).exists()
+            FavoriteVacancy.objects.filter(
+                student_profile=self.student_profile, vacancy=self.vacancy
+            ).exists()
         )
-
         remove_response = self.client.post(
             reverse("vacancies:toggle_favorite", args=[self.vacancy.pk]),
             {"next": reverse("vacancies:public_list")},
@@ -375,24 +368,24 @@ class StudentFavoriteVacancyTests(TestCase):
         )
         self.assertEqual(remove_response.status_code, 200)
         self.assertFalse(
-            FavoriteVacancy.objects.filter(student_profile=self.student_profile, vacancy=self.vacancy).exists()
+            FavoriteVacancy.objects.filter(
+                student_profile=self.student_profile, vacancy=self.vacancy
+            ).exists()
         )
 
     def test_student_can_view_favorite_vacancies_page(self):
-        FavoriteVacancy.objects.create(student_profile=self.student_profile, vacancy=self.vacancy)
+        FavoriteVacancy.objects.create(
+            student_profile=self.student_profile, vacancy=self.vacancy
+        )
         self.client.force_login(self.student_user)
-
         response = self.client.get(reverse("vacancies:student_favorites"))
-
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Избранные вакансии")
         self.assertContains(response, "Favorite Vacancy")
 
     def test_empty_favorites_page_has_empty_message(self):
         self.client.force_login(self.student_user)
-
         response = self.client.get(reverse("vacancies:student_favorites"))
-
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "В избранном пока нет вакансий")
 
@@ -403,5 +396,7 @@ class StudentFavoriteVacancyTests(TestCase):
 
     def test_employer_cannot_toggle_favorite(self):
         self.client.force_login(self.employer_user)
-        response = self.client.post(reverse("vacancies:toggle_favorite", args=[self.vacancy.pk]))
+        response = self.client.post(
+            reverse("vacancies:toggle_favorite", args=[self.vacancy.pk])
+        )
         self.assertEqual(response.status_code, 403)

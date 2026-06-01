@@ -1,9 +1,9 @@
 from django import forms
-
 from .models import Skill, StudentSkill
 
 
 class SkillChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         return f"{obj.name} ({obj.category})"
 
@@ -37,7 +37,6 @@ class StudentSkillForm(forms.ModelForm):
         "HTTP": {"slug": None, "color": None, "short": "HTTP"},
         "Algorithms": {"slug": None, "color": None, "short": "Algo"},
     }
-
     SKILL_CATALOG = [
         (
             "frontend",
@@ -82,28 +81,25 @@ class StudentSkillForm(forms.ModelForm):
         fields = ("skill", "level")
 
     def _ensure_catalog_skills(self):
-        """Create baseline skills from the fixed catalog if they are missing."""
         seen_names = set()
         for _, _, category, technologies in self.SKILL_CATALOG:
             for technology_name in technologies:
                 if technology_name in seen_names:
                     continue
                 seen_names.add(technology_name)
-                Skill.objects.get_or_create(name=technology_name, defaults={"category": category})
+                Skill.objects.get_or_create(
+                    name=technology_name, defaults={"category": category}
+                )
 
     def __init__(self, *args, **kwargs):
         self.student_profile = kwargs.pop("student_profile")
         super().__init__(*args, **kwargs)
         self._ensure_catalog_skills()
-
         queryset = Skill.objects.order_by("name")
         self.fields["skill"] = SkillChoiceField(
-            queryset=queryset,
-            widget=forms.HiddenInput(),
-            label="Навык",
+            queryset=queryset, widget=forms.HiddenInput(), label="Навык"
         )
         self.fields["level"].widget = forms.HiddenInput()
-
         name_to_skill_id = {item.name: item.pk for item in queryset}
         self.skill_catalog = []
         for key, label, _category, technologies in self.SKILL_CATALOG:
@@ -116,13 +112,15 @@ class StudentSkillForm(forms.ModelForm):
                             "name": technology_name,
                             "id": name_to_skill_id.get(technology_name),
                             "icon_url": (
-                                f"https://cdn.simpleicons.org/"
-                                f"{self.TECHNOLOGY_ICON_CONFIG[technology_name]['slug']}/"
-                                f"{self.TECHNOLOGY_ICON_CONFIG[technology_name]['color']}"
-                                if self.TECHNOLOGY_ICON_CONFIG.get(technology_name, {}).get("slug")
+                                f"https://cdn.simpleicons.org/{self.TECHNOLOGY_ICON_CONFIG[technology_name]['slug']}/{self.TECHNOLOGY_ICON_CONFIG[technology_name]['color']}"
+                                if self.TECHNOLOGY_ICON_CONFIG.get(
+                                    technology_name, {}
+                                ).get("slug")
                                 else None
                             ),
-                            "short": self.TECHNOLOGY_ICON_CONFIG.get(technology_name, {}).get("short", technology_name[:2]),
+                            "short": self.TECHNOLOGY_ICON_CONFIG.get(
+                                technology_name, {}
+                            ).get("short", technology_name[:2]),
                         }
                         for technology_name in technologies
                     ],
@@ -131,7 +129,9 @@ class StudentSkillForm(forms.ModelForm):
 
     def clean_skill(self):
         skill = self.cleaned_data["skill"]
-        queryset = StudentSkill.objects.filter(student_profile=self.student_profile, skill=skill)
+        queryset = StudentSkill.objects.filter(
+            student_profile=self.student_profile, skill=skill
+        )
         if self.instance.pk:
             queryset = queryset.exclude(pk=self.instance.pk)
         if queryset.exists():

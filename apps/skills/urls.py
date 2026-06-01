@@ -1,5 +1,4 @@
 from django.urls import path
-
 from .views import (
     student_skill_create,
     student_skill_delete,
@@ -8,7 +7,6 @@ from .views import (
 )
 
 app_name = "skills"
-
 urlpatterns = [
     path("student/", student_skill_list, name="student_skill_list"),
     path("student/add/", student_skill_create, name="student_skill_add"),

@@ -1,5 +1,4 @@
 from django.shortcuts import render
-
 from apps.applications.models import Application
 from apps.profiles.models import EmployerProfile, StudentProfile
 from apps.vacancies.models import Vacancy
@@ -7,8 +6,9 @@ from apps.vacancies.models import Vacancy
 
 def home(request):
     published_vacancies = Vacancy.objects.filter(status=Vacancy.Status.PUBLISHED)
-    latest_vacancies = published_vacancies.select_related("employer").prefetch_related("required_skills__skill")[:3]
-
+    latest_vacancies = published_vacancies.select_related("employer").prefetch_related(
+        "required_skills__skill"
+    )[:3]
     context = {
         "metrics": [
             {"value": published_vacancies.count(), "label": "Вакансий"},

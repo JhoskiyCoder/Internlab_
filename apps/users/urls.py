@@ -1,10 +1,8 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
-
 from .views import RegisterView, RoleLoginView, employer_dashboard, student_dashboard
 
 app_name = "users"
-
 urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
     path("login/", RoleLoginView.as_view(), name="login"),

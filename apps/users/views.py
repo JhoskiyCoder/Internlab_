@@ -6,17 +6,14 @@ from django.db.models import Count
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.generic import CreateView
-
 from apps.applications.models import Application
 from apps.profiles.models import EmployerProfile
 from apps.vacancies.models import Vacancy
-
 from .forms import UserLoginForm, UserRegistrationForm
 from .permissions import role_required
 
 
 def get_role_home_url(user):
-    """Return the default page based on user role."""
     if user.role == "student":
         return reverse("profiles:student_profile_detail")
     if user.role == "employer":
@@ -36,7 +33,9 @@ class RegisterView(CreateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         login(self.request, self.object)
-        messages.success(self.request, "Регистрация прошла успешно. Добро пожаловать в InternLAB.")
+        messages.success(
+            self.request, "Регистрация прошла успешно. Добро пожаловать в InternLAB."
+        )
         return response
 
     def get_success_url(self):
@@ -61,7 +60,6 @@ def student_dashboard(request):
 @role_required("employer")
 def employer_dashboard(request):
     employer_profile = EmployerProfile.objects.filter(user=request.user).first()
-
     context = {
         "employer_profile": employer_profile,
         "metrics": {
@@ -79,24 +77,34 @@ def employer_dashboard(request):
         "draft_vacancies": [],
         "vacancies_without_skills": [],
     }
-
     if employer_profile:
         vacancies = Vacancy.objects.filter(employer=employer_profile)
-        applications = Application.objects.filter(vacancy__employer=employer_profile).select_related(
-            "student",
-            "vacancy",
-        )
+        applications = Application.objects.filter(
+            vacancy__employer=employer_profile
+        ).select_related("student", "vacancy")
         context.update(
             {
                 "metrics": {
                     "total_vacancies": vacancies.count(),
-                    "published_vacancies": vacancies.filter(status=Vacancy.Status.PUBLISHED).count(),
+                    "published_vacancies": vacancies.filter(
+                        status=Vacancy.Status.PUBLISHED
+                    ).count(),
                     "total_applications": applications.count(),
-                    "new_applications": applications.filter(status=Application.Status.SUBMITTED).count(),
-                    "reviewing_applications": applications.filter(status=Application.Status.REVIEWING).count(),
-                    "accepted_applications": applications.filter(status=Application.Status.ACCEPTED).count(),
-                    "draft_vacancies": vacancies.filter(status=Vacancy.Status.DRAFT).count(),
-                    "vacancies_without_skills": vacancies.annotate(skills_count=Count("required_skills"))
+                    "new_applications": applications.filter(
+                        status=Application.Status.SUBMITTED
+                    ).count(),
+                    "reviewing_applications": applications.filter(
+                        status=Application.Status.REVIEWING
+                    ).count(),
+                    "accepted_applications": applications.filter(
+                        status=Application.Status.ACCEPTED
+                    ).count(),
+                    "draft_vacancies": vacancies.filter(
+                        status=Vacancy.Status.DRAFT
+                    ).count(),
+                    "vacancies_without_skills": vacancies.annotate(
+                        skills_count=Count("required_skills")
+                    )
                     .filter(skills_count=0)
                     .count(),
                 },
@@ -104,11 +112,14 @@ def employer_dashboard(request):
                 "active_vacancies": vacancies.filter(status=Vacancy.Status.PUBLISHED)
                 .annotate(applications_count=Count("applications"))
                 .order_by("-created_at")[:5],
-                "draft_vacancies": vacancies.filter(status=Vacancy.Status.DRAFT).order_by("-created_at")[:3],
-                "vacancies_without_skills": vacancies.annotate(skills_count=Count("required_skills"))
+                "draft_vacancies": vacancies.filter(
+                    status=Vacancy.Status.DRAFT
+                ).order_by("-created_at")[:3],
+                "vacancies_without_skills": vacancies.annotate(
+                    skills_count=Count("required_skills")
+                )
                 .filter(skills_count=0)
                 .order_by("-created_at")[:3],
             }
         )
-
     return render(request, "users/employer_dashboard.html", context)
