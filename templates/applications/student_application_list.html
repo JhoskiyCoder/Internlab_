@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="student-applications-page">
+  <div class="student-applications-hero mb-4">
+    <div>
+      <span class="student-applications-kicker">Отклики</span>
+      <h1 class="section-title mt-2 mb-2">Мои заявки</h1>
+      <p class="section-subtitle mb-0">Отслеживайте отправленные заявки и решения работодателей.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'vacancies:public_list' %}">Смотреть вакансии</a>
+  </div>
+
+  <div class="student-applications-panel">
+    {% include "applications/_student_application_cards.html" %}
+  </div>
+</section>
+{% endblock %}

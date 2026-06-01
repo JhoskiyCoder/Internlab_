@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .employer-settings-modal .modal-content {
+    border: 1px solid color-mix(in srgb, var(--app-primary) 20%, var(--app-border));
+    border-radius: 24px;
+    background: var(--app-surface);
+    color: var(--app-text);
+    box-shadow: 0 30px 70px rgba(15, 23, 42, 0.28);
+    overflow: hidden;
+  }
+
+  .employer-settings-modal .modal-header {
+    border-bottom: 1px solid var(--app-border);
+    background:
+      radial-gradient(circle at top right, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 42%),
+      var(--app-bg-top);
+    padding: 1.1rem 1.25rem;
+  }
+
+  .employer-settings-modal .modal-body {
+    padding: 1.25rem;
+  }
+
+  .employer-settings-modal .modal-footer {
+    border-top: 1px solid var(--app-border);
+    background: var(--app-bg-top);
+    padding: 0.9rem 1.25rem;
+  }
+
+  .employer-settings-modal .form-control {
+    border-radius: 12px;
+  }
+
+  .employer-settings-logo-preview {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: linear-gradient(135deg, var(--app-primary), #6f42c1);
+    box-shadow: 0 14px 26px rgba(79, 70, 229, 0.22);
+    font-size: 1.45rem;
+    font-weight: 900;
+    overflow: hidden;
+    flex: 0 0 auto;
+  }
+
+  .employer-settings-logo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .modal-backdrop.show {
+    opacity: 0.55;
+    backdrop-filter: blur(8px);
+  }
+</style>
+
+<section class="employer-profile-page">
+  <div class="employer-profile-hero mb-4">
+    <div class="employer-profile-hero-main">
+      <div class="employer-profile-logo">
+        {% if profile.logo %}
+          <img src="{{ profile.logo.url }}" alt="{{ profile.company_name }}">
+        {% else %}
+          {{ profile.company_name|slice:":1"|upper }}
+        {% endif %}
+      </div>
+      <div>
+        <div class="metric-label">Публичный профиль работодателя</div>
+        <h1 class="section-title mt-1 mb-2">{{ profile.company_name }}</h1>
+        <p class="section-subtitle mb-0">
+          Информация о компании, контакты и краткая статистика по вакансиям.
+        </p>
+      </div>
+    </div>
+
+    <div class="employer-profile-actions">
+      <button class="employer-profile-action primary text-start" type="button" data-bs-toggle="modal" data-bs-target="#employerSettingsModal">
+        <span class="employer-profile-action-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.293l6.5-6.5z"/>
+          </svg>
+        </span>
+        <span>
+          <strong>Редактировать</strong>
+          <small>Обновить описание</small>
+        </span>
+      </button>
+      <a class="employer-profile-action" href="{% url 'users:employer_dashboard' %}">
+        <span class="employer-profile-action-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M0 1.5A1.5 1.5 0 0 1 1.5 0h13A1.5 1.5 0 0 1 16 1.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5v-13zM1.5 1a.5.5 0 0 0-.5.5V6h14V1.5a.5.5 0 0 0-.5-.5h-13zM15 7H1v7.5a.5.5 0 0 0 .5.5H8V7h7z"/>
+          </svg>
+        </span>
+        <span>
+          <strong>Дэшборд</strong>
+          <small>Метрики и кандидаты</small>
+        </span>
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-4">
+      <div class="employer-profile-side-card h-100">
+        <div class="employer-profile-side-header">
+          <span class="employer-profile-side-logo">
+            {% if profile.logo %}
+              <img src="{{ profile.logo.url }}" alt="{{ profile.company_name }}">
+            {% else %}
+              {{ profile.company_name|slice:":1"|upper }}
+            {% endif %}
+          </span>
+          <div>
+            <h2>{{ profile.company_name }}</h2>
+            <p>Работодатель на InternLAB</p>
+          </div>
+        </div>
+
+        <div class="employer-contact-list">
+          <div class="employer-contact-row">
+            <span class="employer-contact-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v.217l-8 4.8-8-4.8zm0 1.383V12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5.383l-7.486 4.491a1 1 0 0 1-1.028 0z"/>
+              </svg>
+            </span>
+            <span>{{ profile.contact_email }}</span>
+          </div>
+          <div class="employer-contact-row">
+            <span class="employer-contact-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0M5.5 1.5h5A6.5 6.5 0 0 1 14.5 8c0 .69-.108 1.354-.307 1.978H1.807A6.48 6.48 0 0 1 1.5 8 6.5 6.5 0 0 1 5.5 1.5m1.25 9.478h2.5A11.9 11.9 0 0 1 8 14.32a11.9 11.9 0 0 1-1.25-3.342"/>
+              </svg>
+            </span>
+            {% if profile.website %}
+              <a href="{{ profile.website }}" target="_blank" rel="noopener">{{ profile.website }}</a>
+            {% else %}
+              <span class="text-muted">Сайт не указан</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="employer-profile-mini-note">
+          <strong>Подсказка</strong>
+          <span>Чем понятнее описание компании, тем увереннее студент отправляет отклик.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <div class="employer-profile-main-card h-100">
+        <div class="employer-profile-card-header">
+          <div>
+            <h2>О компании</h2>
+            <p>Краткое описание, которое помогает студентам понять контекст стажировки.</p>
+          </div>
+          <span class="badge text-bg-light border">Публичный профиль</span>
+        </div>
+
+        <div class="employer-description">
+          {{ profile.company_description|linebreaks }}
+        </div>
+
+        <div class="employer-profile-stats-grid mt-4">
+          <div class="employer-profile-stat">
+            <div class="metric-value">{{ stats.total_vacancies }}</div>
+            <div class="metric-label">Вакансии</div>
+          </div>
+          <div class="employer-profile-stat">
+            <div class="metric-value">{{ stats.published_vacancies }}</div>
+            <div class="metric-label">Опубликовано</div>
+          </div>
+          <div class="employer-profile-stat">
+            <div class="metric-value">{{ stats.total_applications }}</div>
+            <div class="metric-label">Заявки</div>
+          </div>
+          <div class="employer-profile-stat">
+            <div class="metric-value">{{ stats.new_applications }}</div>
+            <div class="metric-label">Новые</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="employer-profile-main-card mt-3">
+    <div class="employer-profile-card-header">
+      <div>
+        <h2>Последние вакансии</h2>
+        <p>Свежие позиции компании на платформе.</p>
+      </div>
+      <a href="{% url 'vacancies:employer_list' %}" class="btn btn-sm btn-outline-primary">Все вакансии</a>
+    </div>
+
+    <div class="row g-2">
+      {% for vacancy in latest_vacancies %}
+        <div class="col-md-4">
+          <a class="employer-profile-vacancy" href="{% url 'vacancies:employer_vacancy_detail' vacancy.pk %}">
+            <div>
+              <div class="fw-bold">{{ vacancy.title }}</div>
+              <div class="text-muted small mt-1">{{ vacancy.get_status_display }} · {{ vacancy.get_internship_type_display }}</div>
+            </div>
+            <span class="badge text-bg-light border mt-3">{{ vacancy.applications_count }} заявок</span>
+          </a>
+        </div>
+      {% empty %}
+        <div class="col-12">
+          <div class="dashboard-empty">Компания пока не создала вакансии.</div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<div class="modal fade employer-settings-modal" id="employerSettingsModal" tabindex="-1" aria-labelledby="employerSettingsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <div class="modal-header">
+          <div class="d-flex align-items-center gap-3">
+            <span class="employer-settings-logo-preview">
+              {% if profile.logo %}
+                <img src="{{ profile.logo.url }}" alt="{{ profile.company_name }}">
+              {% else %}
+                {{ profile.company_name|slice:":1"|upper }}
+              {% endif %}
+            </span>
+            <div>
+              <h2 class="modal-title h5 fw-bold" id="employerSettingsModalLabel">Настройки компании</h2>
+              <p class="text-muted small mb-0">Обновите логотип, описание и контактные данные работодателя.</p>
+            </div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            {% for field in employer_form %}
+              <div class="{% if field.name == 'company_description' %}col-12{% elif field.name == 'logo' %}col-12{% else %}col-md-6{% endif %}">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% if open_settings_modal %}
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var modalEl = document.getElementById("employerSettingsModal");
+      if (modalEl && window.bootstrap) {
+        window.bootstrap.Modal.getOrCreateInstance(modalEl).show();
+      }
+    });
+  </script>
+{% endif %}
+{% endblock %}

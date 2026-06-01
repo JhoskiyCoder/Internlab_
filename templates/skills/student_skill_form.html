@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .skill-category-btn {
+    border-radius: 999px;
+    font-weight: 700;
+    padding: 0.46rem 0.88rem;
+  }
+
+  .skill-category-btn.active {
+    background: var(--app-primary);
+    color: #fff;
+    border-color: var(--app-primary);
+  }
+
+  .technology-btn {
+    border-radius: 12px;
+    border: 1px solid var(--app-border);
+    background: var(--app-surface);
+    color: var(--app-text);
+    font-weight: 600;
+    padding: 0.48rem 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .technology-btn:hover {
+    border-color: var(--app-primary);
+    color: var(--app-primary);
+  }
+
+  .technology-btn.active {
+    border-color: var(--app-primary);
+    background: color-mix(in srgb, var(--app-primary-soft) 75%, transparent);
+    color: var(--app-primary);
+  }
+
+  .technology-logo {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--app-border) 50%, transparent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .technology-logo img {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .technology-logo-fallback {
+    font-size: 0.58rem;
+    line-height: 1;
+    font-weight: 800;
+    color: var(--app-muted);
+    letter-spacing: 0.01em;
+  }
+
+  .level-btn {
+    min-width: 44px;
+    border-radius: 10px;
+  }
+
+  .level-btn.active {
+    background: var(--app-primary);
+    color: #fff;
+    border-color: var(--app-primary);
+  }
+</style>
+
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-3">{{ title }}</h1>
+        <p class="text-muted">Выберите категорию, технологию и уровень владения.</p>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          {{ form.skill }}
+          {{ form.level }}
+
+          <div class="mb-3">
+            <div class="form-label fw-semibold mb-2">Категория</div>
+            <div class="d-flex flex-wrap gap-2">
+              {% for category in form.skill_catalog %}
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary skill-category-btn js-skill-category-btn"
+                  data-category="{{ category.key }}"
+                >
+                  {{ category.label }}
+                </button>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="form-label fw-semibold mb-2">Технология</div>
+            {% for category in form.skill_catalog %}
+              <div class="d-flex flex-wrap gap-2 js-skill-tech-group {% if not forloop.first %}d-none{% endif %}" data-category-group="{{ category.key }}">
+                {% for technology in category.technologies %}
+                  <button
+                    type="button"
+                    class="btn technology-btn js-technology-btn {% if not technology.id %}disabled{% endif %}"
+                    {% if technology.id %}data-skill-id="{{ technology.id }}"{% endif %}
+                    {% if not technology.id %}title="Навык пока не добавлен в базу"{% endif %}
+                  >
+                    <span class="technology-logo">
+                      {% if technology.icon_url %}
+                        <img src="{{ technology.icon_url }}" alt="{{ technology.name }}">
+                      {% else %}
+                        <span class="technology-logo-fallback">{{ technology.short }}</span>
+                      {% endif %}
+                    </span>
+                    {{ technology.name }}
+                  </button>
+                {% endfor %}
+              </div>
+            {% endfor %}
+            {% for error in form.skill.errors %}
+              <div class="text-danger small mt-2">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-4">
+            <div class="form-label fw-semibold mb-2">Уровень (1-5)</div>
+            <div class="d-flex flex-wrap gap-2">
+              {% for value in "12345" %}
+                <button type="button" class="btn btn-outline-secondary level-btn js-level-btn" data-level="{{ value }}">
+                  {{ value }}
+                </button>
+              {% endfor %}
+            </div>
+            {% for error in form.level.errors %}
+              <div class="text-danger small mt-2">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">{{ submit_text }}</button>
+            <a class="btn btn-outline-secondary" href="{% url 'skills:student_skill_list' %}">Отмена</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var skillInput = document.getElementById("id_skill");
+    var levelInput = document.getElementById("id_level");
+    var categoryButtons = Array.from(document.querySelectorAll(".js-skill-category-btn"));
+    var techGroups = Array.from(document.querySelectorAll(".js-skill-tech-group"));
+    var techButtons = Array.from(document.querySelectorAll(".js-technology-btn"));
+    var levelButtons = Array.from(document.querySelectorAll(".js-level-btn"));
+
+    if (!skillInput || !levelInput || !categoryButtons.length) {
+      return;
+    }
+
+    function activateCategory(categoryKey) {
+      categoryButtons.forEach(function (btn) {
+        btn.classList.toggle("active", btn.dataset.category === categoryKey);
+      });
+      techGroups.forEach(function (group) {
+        group.classList.toggle("d-none", group.dataset.categoryGroup !== categoryKey);
+      });
+    }
+
+    function activateSkill(skillId) {
+      techButtons.forEach(function (btn) {
+        btn.classList.toggle("active", btn.dataset.skillId === skillId);
+      });
+      skillInput.value = skillId || "";
+    }
+
+    function activateLevel(levelValue) {
+      levelButtons.forEach(function (btn) {
+        btn.classList.toggle("active", btn.dataset.level === levelValue);
+      });
+      levelInput.value = levelValue || "";
+    }
+
+    categoryButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        activateCategory(btn.dataset.category);
+      });
+    });
+
+    techButtons.forEach(function (btn) {
+      if (!btn.dataset.skillId) {
+        return;
+      }
+      btn.addEventListener("click", function () {
+        activateSkill(btn.dataset.skillId);
+      });
+    });
+
+    levelButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        activateLevel(btn.dataset.level);
+      });
+    });
+
+    var selectedSkillId = skillInput.value;
+    var selectedSkillButton = techButtons.find(function (btn) {
+      return btn.dataset.skillId === selectedSkillId;
+    });
+    var initialCategory = selectedSkillButton
+      ? selectedSkillButton.closest(".js-skill-tech-group").dataset.categoryGroup
+      : categoryButtons[0].dataset.category;
+
+    activateCategory(initialCategory);
+    if (selectedSkillId) {
+      activateSkill(selectedSkillId);
+    }
+
+    if (levelInput.value) {
+      activateLevel(levelInput.value);
+    }
+  })();
+</script>
+{% endblock %}

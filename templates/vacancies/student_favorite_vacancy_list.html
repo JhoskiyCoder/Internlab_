@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/vacancies_public_list.css' %}?v=color-lift-1">
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="section-title">Избранные вакансии</h1>
+    <p class="section-subtitle">Сохраненные стажировки, к которым можно быстро вернуться.</p>
+  </div>
+  <a class="btn btn-outline-primary" href="{% url 'vacancies:public_list' %}">Все вакансии</a>
+</div>
+
+{% include "vacancies/_vacancy_card_grid.html" with empty_message="В избранном пока нет вакансий. Добавляйте их кнопкой закладки в списке стажировок." %}
+{% endblock %}

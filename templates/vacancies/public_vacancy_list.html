@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load l10n static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/vacancies_public_list.css' %}?v=color-lift-1">
+
+{% if student_banner %}
+  <div class="card internship-hero mb-4">
+    <div class="card-body p-4 p-lg-5 position-relative">
+      <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4">
+        <div>
+          <h2 class="internship-hero-title mb-2">Привет, {{ student_banner.student_name }}!</h2>
+          <p class="internship-hero-subtitle">
+            Найдено <strong>{{ student_banner.vacancies_count }} вакансий</strong> для вас.
+            Лучшее совпадение — <strong>{{ student_banner.best_score|floatformat:0|unlocalize }}%</strong>
+          </p>
+        </div>
+        <a class="btn btn-light text-primary internship-hero-btn" href="{% url 'matching:student_recommendations' %}">
+          Мои рекомендации →
+        </a>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="section-title">Опубликованные вакансии</h1>
+    <p class="section-subtitle">Открытые вакансии для студентов.</p>
+  </div>
+  {% if user.is_authenticated and user.role == 'employer' %}
+    <a class="btn btn-outline-primary" href="{% url 'vacancies:employer_list' %}">Управлять вакансиями</a>
+  {% endif %}
+</div>
+
+{% if search_query %}
+  <p class="text-muted small mb-3">
+    По запросу «{{ search_query }}» найдено: {{ vacancy_cards|length }}
+  </p>
+{% endif %}
+
+{% include "vacancies/_vacancy_card_grid.html" with empty_message="Опубликованных вакансий пока нет." %}
+{% endblock %}

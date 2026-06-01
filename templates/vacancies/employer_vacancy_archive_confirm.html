@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card border-dark shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h5 mb-3">Архивировать вакансию</h1>
+        <p>Вы уверены, что хотите архивировать <strong>{{ vacancy.title }}</strong>?</p>
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-dark">Архивировать</button>
+          <a class="btn btn-outline-secondary" href="{% url 'vacancies:employer_vacancy_detail' vacancy.pk %}">Отмена</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

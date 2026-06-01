@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/applications_employer.css' %}?v=candidate-detail-profile-1">
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div>
+    <h1 class="section-title">Рассмотрение заявки</h1>
+    <p class="section-subtitle">Проверьте данные кандидата и обновите статус отклика.</p>
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'applications:employer_list' %}">К списку заявок</a>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card application-detail-card">
+      <div class="card-body p-3 p-md-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+          <div class="d-flex align-items-start gap-3">
+            <span class="application-avatar">{{ application.student.full_name|slice:":1"|upper }}</span>
+            <div>
+              <h2 class="h5 mb-1">{{ application.student.full_name }}</h2>
+              <div class="application-meta-line">{{ application.student.user.email }}</div>
+            </div>
+          </div>
+          <div class="application-match-score" style="--match-score: {{ match_score|floatformat:0 }};">
+            <span class="application-match-value">{{ match_score|floatformat:0 }}%</span>
+          </div>
+        </div>
+
+        <div class="application-detail-list mb-4">
+          <div class="application-detail-row">
+            <span class="application-detail-label">Вакансия</span>
+            <span class="application-detail-value">{{ application.vacancy.title }}</span>
+          </div>
+          <div class="application-detail-row">
+            <span class="application-detail-label">Статус</span>
+            <span class="application-detail-value">
+              {% if application.status == 'submitted' %}
+                <span class="badge application-status submitted">{{ application.get_status_display }}</span>
+              {% elif application.status == 'reviewing' %}
+                <span class="badge application-status reviewing">{{ application.get_status_display }}</span>
+              {% elif application.status == 'accepted' %}
+                <span class="badge application-status accepted">{{ application.get_status_display }}</span>
+              {% else %}
+                <span class="badge application-status rejected">{{ application.get_status_display }}</span>
+              {% endif %}
+            </span>
+          </div>
+          <div class="application-detail-row">
+            <span class="application-detail-label">Дата подачи</span>
+            <span class="application-detail-value">{{ application.created_at|date:"d.m.Y H:i" }}</span>
+          </div>
+          <div class="application-detail-row">
+            <span class="application-detail-label">Курс</span>
+            <span class="application-detail-value">{{ application.student.course|default:"—" }}</span>
+          </div>
+          <div class="application-detail-row">
+            <span class="application-detail-label">Университет</span>
+            <span class="application-detail-value">{{ application.student.university|default:"—" }}</span>
+          </div>
+          <div class="application-detail-row">
+            <span class="application-detail-label">Средний уровень</span>
+            <span class="application-detail-value">{{ average_skill_level }}/5</span>
+          </div>
+        </div>
+
+        <div class="application-profile-summary mb-4">
+          <div class="application-summary-tile">
+            <span class="application-summary-label">Совпадение</span>
+            <strong>{{ match_score|floatformat:0 }}%</strong>
+          </div>
+          <div class="application-summary-tile">
+            <span class="application-summary-label">Навыков</span>
+            <strong>{{ candidate_skills|length }}</strong>
+          </div>
+          <div class="application-summary-tile">
+            <span class="application-summary-label">Проектов</span>
+            <strong>{{ candidate_projects|length }}</strong>
+          </div>
+          <div class="application-summary-tile">
+            <span class="application-summary-label">Средний уровень</span>
+            <strong>{{ average_skill_level }}/5</strong>
+          </div>
+        </div>
+
+        <h2 class="h6 mb-2">Сопроводительное письмо</h2>
+        <div class="application-cover-full">
+          {{ application.cover_letter|default:"Сопроводительное письмо не указано."|linebreaks }}
+        </div>
+
+        <div class="application-skills-section mt-4">
+          <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+            <h2 class="h6 mb-0">Навыки кандидата</h2>
+            <span class="application-skills-count">{{ candidate_skills|length }}</span>
+          </div>
+
+          {% if candidate_skills %}
+            <div class="application-skills-grid">
+              {% for student_skill in candidate_skills %}
+                <div class="application-skill-card">
+                  <div class="min-w-0">
+                    <div class="application-skill-name">{{ student_skill.skill.name }}</div>
+                    <div class="application-skill-category">{{ student_skill.skill.get_category_display }}</div>
+                  </div>
+                  <span class="application-skill-level">Уровень {{ student_skill.level }}/5</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="application-skills-empty">Кандидат пока не добавил навыки в профиль.</div>
+          {% endif %}
+        </div>
+
+        <div class="application-skills-section mt-4">
+          <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+            <h2 class="h6 mb-0">Языки кандидата</h2>
+            <span class="application-skills-count">{{ candidate_languages|length }}</span>
+          </div>
+
+          {% if candidate_languages %}
+            <div class="application-language-list">
+              {% for language in candidate_languages %}
+                <span class="application-language-chip">{{ language }}</span>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="application-skills-empty">Кандидат пока не указал языки.</div>
+          {% endif %}
+        </div>
+
+        <div class="application-skills-section mt-4">
+          <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+            <h2 class="h6 mb-0">Проекты и опыт</h2>
+            <span class="application-skills-count">{{ candidate_projects|length }}</span>
+          </div>
+
+          {% if candidate_projects %}
+            <div class="application-project-list">
+              {% for project in candidate_projects %}
+                <div class="application-project-card">
+                  <div class="d-flex flex-wrap justify-content-between gap-2">
+                    <div>
+                      <div class="application-project-title">{{ project.title }}</div>
+                      {% if project.role %}
+                        <div class="application-project-role">{{ project.role }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="application-project-date">
+                      {% if project.start_date %}{{ project.start_date|date:"M Y" }}{% endif %}
+                      {% if project.end_date %} — {{ project.end_date|date:"M Y" }}{% elif project.is_current %} — по н.в.{% endif %}
+                    </div>
+                  </div>
+                  {% if project.description %}
+                    <p>{{ project.description }}</p>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="application-skills-empty">Кандидат пока не добавил проекты или опыт.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card application-status-panel">
+      <div class="card-body p-3 p-md-4">
+        <h2 class="h6 mb-3">Обновить статус</h2>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label" for="{{ status_form.status.id_for_label }}">{{ status_form.status.label }}</label>
+            {{ status_form.status }}
+            {% for error in status_form.status.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Сохранить статус</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

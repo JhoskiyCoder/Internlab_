@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body p-4">
+        <h1 class="section-title mb-2">Отклик на вакансию</h1>
+        <p class="section-subtitle mb-4"><strong>{{ vacancy.title }}</strong> в компании {{ vacancy.employer.company_name }}</p>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% for error in field.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Отправить заявку</button>
+            <a class="btn btn-outline-secondary" href="{% url 'vacancies:public_detail' vacancy.pk %}">Отмена</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

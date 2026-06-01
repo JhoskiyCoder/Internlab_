@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="employer-dashboard">
+  <div class="employer-dashboard-hero mb-4">
+    <div class="employer-dashboard-hero-main">
+      {% if employer_profile %}
+        <span class="employer-dashboard-logo">
+          {% if employer_profile.logo %}
+            <img src="{{ employer_profile.logo.url }}" alt="{{ employer_profile.company_name }}">
+          {% else %}
+            {{ employer_profile.company_name|slice:":1"|upper }}
+          {% endif %}
+        </span>
+      {% endif %}
+      <div>
+        <div class="metric-label">Рабочее пространство</div>
+        <h1 class="section-title mt-1">Дэшборд</h1>
+        {% if employer_profile %}
+          <p class="section-subtitle mt-2">
+            {{ employer_profile.company_name }}: {{ metrics.new_applications }} новых заявок, {{ metrics.published_vacancies }} активных вакансий.
+          </p>
+        {% else %}
+          <p class="section-subtitle mt-2">
+            Заполните профиль компании, чтобы управлять вакансиями и кандидатами.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+    <div class="employer-dashboard-actions">
+      <a class="btn btn-primary employer-dashboard-action-main" href="{% url 'vacancies:employer_create' %}">
+        + Создать вакансию
+      </a>
+      <a class="btn btn-outline-primary employer-dashboard-action-secondary" href="{% url 'profiles:employer_profile_detail' %}">
+        Профиль компании
+      </a>
+    </div>
+  </div>
+
+  {% if not employer_profile %}
+    <div class="card">
+      <div class="card-body p-4">
+        <h2 class="h4 mb-2">Заполните профиль компании</h2>
+        <p class="section-subtitle mb-3">
+          После заполнения профиля здесь появятся метрики по вакансиям и кандидатам.
+        </p>
+        <a class="btn btn-primary" href="{% url 'profiles:employer_profile_create' %}">Заполнить профиль</a>
+      </div>
+    </div>
+  {% else %}
+    <div class="row g-3 mb-4">
+      <div class="col-sm-6 col-xl-3">
+        <div class="card employer-metric-card employer-metric-card-primary h-100">
+          <div class="card-body">
+            <div class="metric-label">Новые заявки</div>
+            <div class="metric-value">{{ metrics.new_applications }}</div>
+            <div class="section-subtitle mt-1">Ожидают просмотра</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="card employer-metric-card h-100">
+          <div class="card-body">
+            <div class="metric-label">Активные вакансии</div>
+            <div class="metric-value">{{ metrics.published_vacancies }}</div>
+            <div class="section-subtitle mt-1">Видны студентам</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="card employer-metric-card h-100">
+          <div class="card-body">
+            <div class="metric-label">Всего откликов</div>
+            <div class="metric-value">{{ metrics.total_applications }}</div>
+            <div class="section-subtitle mt-1">По всем вакансиям</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="card employer-metric-card h-100">
+          <div class="card-body">
+            <div class="metric-label">Черновики</div>
+            <div class="metric-value">{{ metrics.draft_vacancies }}</div>
+            <div class="section-subtitle mt-1">Можно опубликовать</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-lg-8">
+        <div class="dashboard-panel h-100">
+          <div class="dashboard-panel-header">
+            <div>
+              <h2 class="h5 mb-1">Последние заявки</h2>
+              <p class="section-subtitle">Свежие отклики студентов на ваши вакансии.</p>
+            </div>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'applications:employer_list' %}">Все кандидаты</a>
+          </div>
+
+          <div class="dashboard-list employer-dashboard-candidates">
+            {% for application in recent_applications %}
+              <a class="dashboard-list-row employer-dashboard-candidate-row" href="{% url 'applications:employer_detail' application.pk %}">
+                <div>
+                  <div class="fw-bold">{{ application.student.full_name }}</div>
+                  <div class="text-muted small">{{ application.vacancy.title }}</div>
+                </div>
+                <div class="employer-dashboard-candidate-meta">
+                  <span class="badge text-bg-light border">{{ application.get_status_display }}</span>
+                  <span class="text-muted small">{{ application.created_at|date:"d.m.Y H:i" }}</span>
+                </div>
+              </a>
+            {% empty %}
+              <div class="dashboard-empty">Пока нет заявок от студентов.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="dashboard-panel h-100">
+          <div class="dashboard-panel-header">
+            <div>
+              <h2 class="h5 mb-1">Очередь действий</h2>
+              <p class="section-subtitle">Что стоит проверить в первую очередь.</p>
+            </div>
+          </div>
+
+          <div class="dashboard-action-list">
+            <a class="dashboard-action-item" href="{% url 'applications:employer_list' %}">
+              <span>
+                <strong>{{ metrics.new_applications }}</strong>
+                новых заявок
+              </span>
+              <span class="badge text-bg-light border">Открыть</span>
+            </a>
+            <a class="dashboard-action-item" href="{% url 'vacancies:employer_list' %}?status=draft">
+              <span>
+                <strong>{{ metrics.draft_vacancies }}</strong>
+                черновиков
+              </span>
+              <span class="badge text-bg-light border">Проверить</span>
+            </a>
+            <a class="dashboard-action-item" href="{% url 'vacancies:employer_list' %}">
+              <span>
+                <strong>{{ metrics.vacancies_without_skills }}</strong>
+                вакансий без навыков
+              </span>
+              <span class="badge text-bg-light border">Дополнить</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-lg-8">
+        <div class="dashboard-panel h-100">
+          <div class="dashboard-panel-header">
+            <div>
+              <h2 class="h5 mb-1">Активные вакансии</h2>
+              <p class="section-subtitle">Опубликованные вакансии и количество откликов.</p>
+            </div>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'vacancies:employer_list' %}">Все вакансии</a>
+          </div>
+
+          <div class="row g-2">
+            {% for vacancy in active_vacancies %}
+              <div class="col-md-6">
+                <a class="dashboard-vacancy-tile" href="{% url 'vacancies:employer_vacancy_detail' vacancy.pk %}">
+                  <div>
+                    <div class="fw-bold">{{ vacancy.title }}</div>
+                    <div class="text-muted small mt-1">{{ vacancy.get_internship_type_display }} · {{ vacancy.display_location }}</div>
+                  </div>
+                  <span class="badge text-bg-primary">{{ vacancy.applications_count }} заявок</span>
+                </a>
+              </div>
+            {% empty %}
+              <div class="col-12">
+                <div class="dashboard-empty">Пока нет опубликованных вакансий.</div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="dashboard-panel h-100">
+          <div class="dashboard-panel-header">
+            <div>
+              <h2 class="h5 mb-1">Сводка</h2>
+              <p class="section-subtitle">Короткое состояние рабочего пространства.</p>
+            </div>
+          </div>
+
+          <div class="employer-status-summary">
+            <div class="employer-status-row">
+              <span>Опубликованы</span>
+              <strong>{{ metrics.published_vacancies }}</strong>
+            </div>
+            <div class="employer-status-row">
+              <span>Черновики</span>
+              <strong>{{ metrics.draft_vacancies }}</strong>
+            </div>
+            <div class="employer-status-row">
+              <span>Без навыков</span>
+              <strong>{{ metrics.vacancies_without_skills }}</strong>
+            </div>
+            <div class="employer-status-row">
+              <span>На рассмотрении</span>
+              <strong>{{ metrics.reviewing_applications }}</strong>
+            </div>
+          </div>
+
+          <div class="employer-dashboard-note mt-3">
+            <strong>Совет</strong>
+            <span>Добавляйте требования к навыкам: так студенты видят понятный процент совпадения, а вакансии лучше участвуют в подборе.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

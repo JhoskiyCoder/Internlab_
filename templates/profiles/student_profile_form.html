@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="student-profile-form-page">
+  <div class="student-profile-form-hero mb-4">
+    <div>
+      <span class="student-profile-form-kicker">Профиль студента</span>
+      <h1 class="section-title mt-2 mb-2">{{ title }}</h1>
+      <p class="section-subtitle mb-0">
+        Заполните базовую анкету. Эти данные помогут системе подбирать стажировки и показывать работодателю понятный профиль кандидата.
+      </p>
+    </div>
+    <a href="{% url 'core:home' %}" class="btn btn-outline-secondary">На главную</a>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="row g-4 align-items-start">
+      <div class="col-lg-8">
+        <div class="student-profile-form-card">
+          <div class="student-profile-form-section">
+            <div class="student-profile-form-section-title">
+              <span>1</span>
+              <div>
+                <h2>Личная информация</h2>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-7">
+                <label class="form-label" for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+                {{ form.full_name }}
+                {% for error in form.full_name.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+              </div>
+              <div class="col-md-5">
+                <label class="form-label" for="{{ form.avatar.id_for_label }}">{{ form.avatar.label }}</label>
+                {{ form.avatar }}
+                {% for error in form.avatar.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <div class="student-profile-form-divider"></div>
+
+          <div class="student-profile-form-section">
+            <div class="student-profile-form-section-title">
+              <span>2</span>
+              <div>
+                <h2>Образование</h2>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label class="form-label" for="{{ form.university.id_for_label }}">{{ form.university.label }}</label>
+                {{ form.university }}
+                {% for error in form.university.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="{{ form.course.id_for_label }}">{{ form.course.label }}</label>
+                {{ form.course }}
+                {% for error in form.course.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <div class="student-profile-form-divider"></div>
+
+          <div class="student-profile-form-section">
+            <div class="student-profile-form-section-title">
+              <span>3</span>
+              <div>
+                <h2>О себе</h2>
+              </div>
+            </div>
+
+            <div class="mb-0">
+              <label class="form-label" for="{{ form.bio.id_for_label }}">{{ form.bio.label }}</label>
+              {{ form.bio }}
+              {% for error in form.bio.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="student-profile-form-actions mt-3">
+          <button type="submit" class="btn btn-primary">{{ submit_text }}</button>
+          <a href="{% url 'core:home' %}" class="btn btn-outline-secondary">Отмена</a>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <aside class="student-profile-form-side">
+          <div class="student-profile-preview-card mb-3">
+            <div class="student-profile-preview-avatar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                <path d="M2 14s-1 0-1-1 1-4 7-4 7 3 7 4-1 1-1 1z"/>
+              </svg>
+            </div>
+            <h2>Будущий профиль</h2>
+            <p>После сохранения здесь появятся вкладки профиля, заявки, навыки и портфолио.</p>
+            <div class="student-profile-preview-list">
+              <span>Базовая информация</span>
+              <span>Образование</span>
+              <span>Описание кандидата</span>
+            </div>
+          </div>
+
+          <div class="student-profile-form-hint">
+            <h2>Что заполнить в первую очередь</h2>
+            <ul>
+              <li>ФИО и университет нужны для базовой идентификации.</li>
+              <li>Краткое описание помогает работодателю понять ваши цели.</li>
+              <li>Навыки можно добавить следующим шагом после создания профиля.</li>
+              <li>Портфолио и языки можно заполнить позже во вкладке профиля.</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </form>
+</section>
+{% endblock %}

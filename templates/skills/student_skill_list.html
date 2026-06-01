@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .skills-summary-card {
+    border-radius: 14px;
+    border: 1px solid var(--app-border);
+    background: linear-gradient(180deg, var(--app-surface) 0%, var(--app-bg-top) 100%);
+  }
+
+  .skills-table {
+    --bs-table-bg: var(--app-surface);
+    --bs-table-color: var(--app-text);
+    --bs-table-striped-bg: var(--app-surface);
+    --bs-table-hover-bg: color-mix(in srgb, var(--app-hover-bg) 65%, transparent);
+    --bs-table-border-color: var(--app-border);
+  }
+
+  .skills-table thead th {
+    background: color-mix(in srgb, var(--app-surface) 82%, var(--app-bg-top));
+    color: var(--app-muted);
+    font-weight: 700;
+  }
+
+  .skills-table tbody tr td {
+    background: transparent;
+  }
+
+  .skill-level-track {
+    height: 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--app-border) 55%, transparent);
+    overflow: hidden;
+  }
+
+  .skill-level-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--app-primary) 0%, #4f7ce6 100%);
+  }
+
+  .skill-level-badge {
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--app-primary) 45%, var(--app-border));
+    background: color-mix(in srgb, var(--app-primary-soft) 75%, transparent);
+    color: var(--app-primary);
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.82rem;
+  }
+
+  .skill-action-btn {
+    border-radius: 10px;
+    border: 0;
+    color: #fff;
+    font-weight: 700;
+    padding: 0.35rem 0.72rem;
+  }
+
+  .skill-action-btn:hover,
+  .skill-action-btn:focus {
+    color: #fff;
+  }
+
+  .skill-action-edit {
+    background: #4f46e5;
+  }
+
+  .skill-action-edit:hover,
+  .skill-action-edit:focus {
+    background: #4338ca;
+  }
+
+  .skill-action-delete {
+    background: #d97706;
+  }
+
+  .skill-action-delete:hover,
+  .skill-action-delete:focus {
+    background: #b45309;
+  }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <div>
+    <h1 class="section-title">Мои навыки</h1>
+    <p class="section-subtitle">Поддерживайте актуальные навыки и уровни для более точного подбора вакансий.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'profiles:student_profile_detail' %}?tab=skills">В профиль</a>
+    <a class="btn btn-primary" href="{% url 'skills:student_skill_add' %}">Добавить навык</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-6">
+    <div class="card skills-summary-card h-100">
+      <div class="card-body">
+        <div class="metric-label">Всего навыков</div>
+        <div class="metric-value">{{ skills_count }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card skills-summary-card h-100">
+      <div class="card-body">
+        <div class="metric-label">Средний уровень</div>
+        <div class="metric-value">{{ avg_level }} / 5</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle skills-table">
+        <thead>
+          <tr>
+            <th>Навык</th>
+            <th>Категория</th>
+            <th>Уровень (1-5)</th>
+            <th class="text-end">Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for student_skill in skills %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ student_skill.skill.name }}</div>
+            </td>
+            <td><span class="badge text-bg-light border">{{ student_skill.skill.category }}</span></td>
+            <td style="min-width: 180px;">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="skill-level-badge">{{ student_skill.level }}/5</span>
+              </div>
+              <div class="skill-level-track">
+                <div class="skill-level-fill" style="width: {% widthratio student_skill.level 5 100 %}%;"></div>
+              </div>
+            </td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-2">
+                <a class="btn btn-sm skill-action-btn skill-action-edit" href="{% url 'skills:student_skill_edit' student_skill.pk %}">Изменить</a>
+                <a class="btn btn-sm skill-action-btn skill-action-delete" href="{% url 'skills:student_skill_delete' student_skill.pk %}">Удалить</a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4" class="text-center text-muted py-5">
+              Навыки пока не добавлены. Нажмите «Добавить навык», чтобы начать.
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

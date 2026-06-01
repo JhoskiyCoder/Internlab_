@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="vacancy-skill-form-page">
+  <div class="vacancy-form-hero mb-4">
+    <div>
+      <span class="vacancy-form-kicker">Требуемый навык</span>
+      <h1 class="section-title mt-2 mb-2">{{ title }}</h1>
+      <p class="section-subtitle mb-0">
+        Вакансия: <strong>{{ vacancy.title }}</strong>. Выберите технологию по категории, требуемый уровень и критичность.
+      </p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'vacancies:employer_vacancy_detail' vacancy.pk %}">Назад к вакансии</a>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {{ form.skill }}
+    {{ form.required_level }}
+    {{ form.weight }}
+
+    <div class="row g-4 align-items-start">
+      <div class="col-lg-8">
+        <div class="vacancy-form-card">
+          <div class="vacancy-form-section">
+            <div class="vacancy-form-section-title">
+              <span>1</span>
+              <div>
+                <h2>Выберите категорию</h2>
+                <p>Категории помогают быстро найти нужную технологию для требования вакансии.</p>
+              </div>
+            </div>
+
+            <div class="vacancy-skill-category-list mb-4">
+              {% for category in form.skill_catalog %}
+                <button
+                  type="button"
+                  class="vacancy-skill-category-btn js-vacancy-skill-category-btn"
+                  data-category="{{ category.key }}"
+                >
+                  {{ category.label }}
+                </button>
+              {% endfor %}
+            </div>
+
+            <div class="vacancy-skill-tech-panel">
+              {% for category in form.skill_catalog %}
+                <div class="vacancy-skill-tech-grid js-vacancy-skill-tech-group {% if not forloop.first %}d-none{% endif %}" data-category-group="{{ category.key }}">
+                  {% for technology in category.technologies %}
+                    <button
+                      type="button"
+                      class="vacancy-skill-tech-card js-vacancy-skill-tech-btn {% if not technology.id %}disabled{% endif %}"
+                      {% if technology.id %}data-skill-id="{{ technology.id }}"{% endif %}
+                      {% if not technology.id %}title="Навык пока не добавлен в базу"{% endif %}
+                    >
+                      <span class="vacancy-skill-tech-logo">
+                        {% if technology.icon_url %}
+                          <img src="{{ technology.icon_url }}" alt="{{ technology.name }}">
+                        {% else %}
+                          <span>{{ technology.short }}</span>
+                        {% endif %}
+                      </span>
+                      <span class="vacancy-skill-tech-name">{{ technology.name }}</span>
+                    </button>
+                  {% endfor %}
+                </div>
+              {% endfor %}
+            </div>
+
+            {% for error in form.skill.errors %}
+              <div class="text-danger small mt-3">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="vacancy-form-divider"></div>
+
+          <div class="vacancy-form-section">
+            <div class="vacancy-form-section-title">
+              <span>2</span>
+              <div>
+                <h2>Настройте требование</h2>
+                <p>Уровень показывает, насколько уверенно студент должен владеть выбранным навыком.</p>
+              </div>
+            </div>
+
+            <div class="vacancy-level-grid">
+              <button type="button" class="vacancy-level-card js-vacancy-level-btn" data-level="1">
+                <strong>1</strong>
+                <span>Базово</span>
+              </button>
+              <button type="button" class="vacancy-level-card js-vacancy-level-btn" data-level="2">
+                <strong>2</strong>
+                <span>Начальный</span>
+              </button>
+              <button type="button" class="vacancy-level-card js-vacancy-level-btn" data-level="3">
+                <strong>3</strong>
+                <span>Средний</span>
+              </button>
+              <button type="button" class="vacancy-level-card js-vacancy-level-btn" data-level="4">
+                <strong>4</strong>
+                <span>Уверенный</span>
+              </button>
+              <button type="button" class="vacancy-level-card js-vacancy-level-btn" data-level="5">
+                <strong>5</strong>
+                <span>Продвинутый</span>
+              </button>
+            </div>
+            <div class="form-text mt-2">Выберите один уровень. Он будет использоваться при расчете совпадения.</div>
+            {% for error in form.required_level.errors %}
+              <div class="text-danger small mt-2">{{ error }}</div>
+            {% endfor %}
+
+            <div class="vacancy-skill-critical mt-3">
+              <div class="form-check form-switch mb-0">
+                {{ form.is_critical }}
+                <label class="form-check-label" for="{{ form.is_critical.id_for_label }}">{{ form.is_critical.label }}</label>
+              </div>
+              <span>Если студент не знает критичный навык, итоговый балл будет снижен.</span>
+              {% for error in form.is_critical.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="vacancy-form-actions mt-3">
+          <button type="submit" class="btn btn-primary">{{ submit_text }}</button>
+          <a class="btn btn-outline-secondary" href="{% url 'vacancies:employer_vacancy_detail' vacancy.pk %}">Отмена</a>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <aside class="vacancy-form-side">
+          <div class="vacancy-form-hint">
+            <h2>Как это влияет на подбор</h2>
+            <ul>
+              <li>Уровень показывает, насколько хорошо студент должен владеть навыком.</li>
+              <li>Критичный навык сильнее влияет на итоговую рекомендацию.</li>
+              <li>Один и тот же навык нельзя добавить в вакансию дважды.</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </form>
+</section>
+
+<script>
+  (function () {
+    var skillInput = document.getElementById("id_skill");
+    var levelInput = document.getElementById("id_required_level");
+    var categoryButtons = Array.from(document.querySelectorAll(".js-vacancy-skill-category-btn"));
+    var techGroups = Array.from(document.querySelectorAll(".js-vacancy-skill-tech-group"));
+    var techButtons = Array.from(document.querySelectorAll(".js-vacancy-skill-tech-btn"));
+    var levelButtons = Array.from(document.querySelectorAll(".js-vacancy-level-btn"));
+
+    if (!skillInput || !levelInput || !categoryButtons.length) {
+      return;
+    }
+
+    function activateCategory(categoryKey) {
+      categoryButtons.forEach(function (btn) {
+        btn.classList.toggle("active", btn.dataset.category === categoryKey);
+      });
+      techGroups.forEach(function (group) {
+        group.classList.toggle("d-none", group.dataset.categoryGroup !== categoryKey);
+      });
+    }
+
+    function activateSkill(skillId) {
+      techButtons.forEach(function (btn) {
+        btn.classList.toggle("active", btn.dataset.skillId === skillId);
+      });
+      skillInput.value = skillId || "";
+    }
+
+    function activateLevel(levelValue) {
+      levelButtons.forEach(function (btn) {
+        btn.classList.toggle("active", btn.dataset.level === levelValue);
+      });
+      levelInput.value = levelValue || "1";
+    }
+
+    categoryButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        activateCategory(btn.dataset.category);
+      });
+    });
+
+    techButtons.forEach(function (btn) {
+      if (!btn.dataset.skillId) {
+        return;
+      }
+      btn.addEventListener("click", function () {
+        activateSkill(btn.dataset.skillId);
+      });
+    });
+
+    levelButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        activateLevel(btn.dataset.level);
+      });
+    });
+
+    var selectedSkillId = skillInput.value;
+    var selectedSkillButton = techButtons.find(function (btn) {
+      return btn.dataset.skillId === selectedSkillId;
+    });
+    var initialCategory = selectedSkillButton
+      ? selectedSkillButton.closest(".js-vacancy-skill-tech-group").dataset.categoryGroup
+      : categoryButtons[0].dataset.category;
+
+    activateCategory(initialCategory);
+    if (selectedSkillId) {
+      activateSkill(selectedSkillId);
+    }
+
+    activateLevel(levelInput.value || "1");
+  })();
+</script>
+{% endblock %}

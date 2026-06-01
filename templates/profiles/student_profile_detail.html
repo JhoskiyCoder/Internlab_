@@ -1,0 +1,1036 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .profile-summary-avatar {
+    width: 104px;
+    height: 104px;
+    border-radius: 24px;
+    object-fit: cover;
+  }
+
+  .profile-summary-avatar-fallback {
+    width: 104px;
+    height: 104px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--app-primary) 0%, #7c3aed 55%, var(--app-success) 100%);
+    color: #fff;
+    box-shadow: 0 18px 34px var(--app-primary-shadow);
+  }
+
+  .profile-sidebar-card {
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  .profile-sidebar-hero {
+    background:
+      radial-gradient(circle at top right, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 38%),
+      radial-gradient(circle at bottom left, color-mix(in srgb, var(--app-success) 10%, transparent), transparent 34%),
+      var(--app-surface);
+  }
+
+  .profile-role-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    background: var(--app-primary-soft);
+    color: var(--app-primary);
+    font-size: 0.76rem;
+    font-weight: 850;
+    padding: 0.28rem 0.65rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .profile-mini-stat {
+    text-align: center;
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    background: var(--app-bg-top);
+    padding: 0.75rem 0.45rem;
+  }
+
+  .profile-mini-stat .fw-bold {
+    color: var(--app-text);
+    font-size: 1.25rem;
+    line-height: 1;
+    margin-bottom: 0.28rem;
+  }
+
+  .profile-completion-track {
+    height: 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--app-border) 60%, transparent);
+    overflow: hidden;
+  }
+
+  .profile-completion-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--app-primary) 0%, var(--app-success) 100%);
+  }
+
+  .profile-completion-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--app-muted);
+    font-weight: 750;
+  }
+
+  .profile-completion-mark {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    border: 1px solid var(--app-border);
+    color: var(--app-muted);
+    background: var(--app-bg-top);
+    font-size: 0.72rem;
+  }
+
+  .profile-completion-item.done {
+    color: var(--app-muted-strong);
+  }
+
+  .profile-completion-item.done .profile-completion-mark {
+    color: #fff;
+    border-color: var(--app-success);
+    background: var(--app-success);
+  }
+
+  .profile-language-chips,
+  .profile-top-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .profile-language-chip,
+  .profile-top-skill-chip {
+    border: 1px solid var(--app-border);
+    border-radius: 999px;
+    background: var(--app-bg-top);
+    color: var(--app-muted-strong);
+    font-size: 0.82rem;
+    font-weight: 750;
+    padding: 0.34rem 0.65rem;
+  }
+
+  .profile-top-skill-chip {
+    background: var(--app-primary-soft);
+    border-color: var(--app-primary-border);
+    color: var(--app-primary);
+  }
+
+  .profile-sidebar-section-title {
+    color: var(--app-text);
+    font-size: 0.96rem;
+    font-weight: 850;
+    margin-bottom: 0.75rem;
+  }
+
+  .profile-skill-chip {
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--app-primary) 22%, var(--app-border));
+    background:
+      radial-gradient(circle at top right, color-mix(in srgb, var(--app-primary) 10%, transparent), transparent 38%),
+      var(--app-bg-top);
+    color: var(--app-text);
+    font-weight: 700;
+    padding: 0.55rem 0.68rem;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .profile-skill-name {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.18rem;
+    min-width: 0;
+  }
+
+  .profile-skill-category {
+    color: var(--app-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .profile-level-dots {
+    display: inline-flex;
+    gap: 0.15rem;
+  }
+
+  .profile-level-dot {
+    width: 0.38rem;
+    height: 0.38rem;
+    border-radius: 999px;
+    background: var(--app-border);
+  }
+
+  .profile-level-dot.active {
+    background: var(--app-primary);
+  }
+
+  .profile-main-section {
+    padding: 1.15rem;
+    border: 1px solid var(--app-border);
+    border-radius: 18px;
+    background:
+      radial-gradient(circle at top right, color-mix(in srgb, var(--app-primary) 5%, transparent), transparent 36%),
+      var(--app-bg-top);
+    margin-bottom: 1rem;
+  }
+
+  .profile-main-section:first-child {
+    padding-top: 1.15rem;
+  }
+
+  .profile-main-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .profile-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .profile-section-icon {
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--app-primary);
+    background: var(--app-primary-soft);
+    flex: 0 0 auto;
+  }
+
+  .profile-main-card {
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  .profile-main-card > .card-body {
+    background:
+      radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--app-primary) 6%, transparent), transparent 38%),
+      var(--app-surface);
+  }
+
+  .profile-education-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) repeat(2, minmax(120px, 0.35fr));
+    gap: 0.75rem;
+  }
+
+  .profile-education-cell {
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    background: var(--app-surface);
+    padding: 0.9rem;
+  }
+
+  .profile-education-label {
+    color: var(--app-muted);
+    font-size: 0.76rem;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+  }
+
+  .profile-education-value {
+    color: var(--app-text);
+    font-size: 1.1rem;
+    font-weight: 900;
+    line-height: 1.15;
+  }
+
+  .profile-level-pill {
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--app-primary) 45%, transparent);
+    background: color-mix(in srgb, var(--app-primary-soft) 20%, transparent);
+    color: var(--app-primary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    line-height: 1.25;
+  }
+
+  .profile-action-btn {
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 0.38rem 0.75rem;
+    border-color: #6f42c1;
+    color: #6f42c1;
+    background: color-mix(in srgb, #6f42c1 10%, transparent);
+  }
+
+  .profile-action-btn:hover {
+    color: #fff;
+    background: #6f42c1;
+    border-color: #6f42c1;
+  }
+
+  .profile-action-btn-solid {
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 0.38rem 0.75rem;
+    border: 1px solid #6f42c1;
+    color: #fff;
+    background: #6f42c1;
+  }
+
+  .profile-action-btn-solid:hover {
+    background: #5f35b1;
+    border-color: #5f35b1;
+    color: #fff;
+  }
+
+  .profile-block-soft {
+    border: 1px solid var(--app-border);
+    border-radius: 14px;
+    padding: 1rem 1rem;
+    background: color-mix(in srgb, var(--app-surface) 82%, var(--app-bg-top));
+  }
+
+  .portfolio-item {
+    border: 1px solid var(--app-border);
+    border-radius: 18px;
+    padding: 1.05rem 1.15rem;
+    background: var(--app-surface);
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .portfolio-item:hover {
+    border-color: color-mix(in srgb, var(--app-primary) 28%, var(--app-border));
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(19, 35, 58, 0.06);
+  }
+
+  .profile-empty-state {
+    border: 1px dashed color-mix(in srgb, var(--app-primary) 34%, var(--app-border));
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--app-primary-soft) 22%, transparent);
+    color: var(--app-muted-strong);
+    padding: 1rem;
+  }
+
+  .profile-empty-state strong {
+    display: block;
+    color: var(--app-text);
+    margin-bottom: 0.25rem;
+  }
+
+  .project-add-trigger {
+    width: 100%;
+    border: 1px dashed color-mix(in srgb, var(--app-primary) 35%, var(--app-border));
+    border-radius: 14px;
+    background: transparent;
+    color: var(--app-muted);
+    font-weight: 700;
+    text-align: left;
+    padding: 0.95rem 1.15rem;
+  }
+
+  .project-add-trigger:hover {
+    border-color: color-mix(in srgb, var(--app-primary) 55%, var(--app-border));
+    color: var(--app-primary);
+    background: color-mix(in srgb, var(--app-primary-soft) 16%, transparent);
+  }
+
+  .project-builder {
+    border: 1px dashed color-mix(in srgb, var(--app-primary) 35%, var(--app-border));
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--app-primary-soft) 16%, transparent);
+    margin-top: 0.85rem;
+  }
+
+  .settings-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .settings-aside,
+  .settings-main {
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--app-surface) 94%, transparent);
+    padding: 1rem;
+  }
+
+  .settings-main {
+    padding: 1.1rem;
+  }
+
+  .settings-avatar {
+    width: 84px;
+    height: 84px;
+    border-radius: 16px;
+    object-fit: cover;
+  }
+
+  .settings-avatar-fallback {
+    width: 84px;
+    height: 84px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #6f2cff 0%, #4e40e5 100%);
+    color: #fff;
+  }
+
+  .settings-section-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #6f42c1;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.75rem;
+  }
+
+  .settings-divider {
+    border-top: 1px dashed var(--app-border);
+    margin: 1rem 0;
+  }
+
+  .settings-submit {
+    border-radius: 10px;
+    background: #6f42c1;
+    border-color: #6f42c1;
+    font-weight: 700;
+    padding: 0.48rem 1rem;
+  }
+
+  .settings-submit:hover {
+    background: #5f35b1;
+    border-color: #5f35b1;
+  }
+
+  .profile-settings-preview {
+    border: 1px solid var(--app-border);
+    border-radius: 22px;
+    background:
+      radial-gradient(circle at top right, color-mix(in srgb, var(--app-primary) 14%, transparent), transparent 42%),
+      linear-gradient(135deg, var(--app-surface), var(--app-bg-top));
+    box-shadow: var(--app-shadow);
+    padding: clamp(1.1rem, 2.4vw, 1.5rem);
+  }
+
+  .profile-settings-preview-icon {
+    width: 3.1rem;
+    height: 3.1rem;
+    border-radius: 17px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: linear-gradient(135deg, #6f2cff 0%, #4e40e5 100%);
+    box-shadow: 0 14px 26px rgba(79, 70, 229, 0.24);
+    flex: 0 0 auto;
+  }
+
+  .profile-settings-chip {
+    border: 1px solid var(--app-border);
+    border-radius: 14px;
+    background: var(--app-surface);
+    padding: 0.72rem 0.85rem;
+  }
+
+  .profile-settings-modal .modal-content {
+    border: 1px solid color-mix(in srgb, var(--app-primary) 20%, var(--app-border));
+    border-radius: 24px;
+    background: var(--app-surface);
+    color: var(--app-text);
+    box-shadow: 0 30px 70px rgba(15, 23, 42, 0.28);
+    overflow: hidden;
+  }
+
+  .profile-settings-modal .modal-header {
+    border-bottom: 1px solid var(--app-border);
+    background:
+      radial-gradient(circle at top right, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 40%),
+      var(--app-bg-top);
+    padding: 1.1rem 1.25rem;
+  }
+
+  .profile-settings-modal .modal-body {
+    padding: 1.25rem;
+  }
+
+  .profile-settings-modal .modal-footer {
+    border-top: 1px solid var(--app-border);
+    background: var(--app-bg-top);
+    padding: 0.9rem 1.25rem;
+  }
+
+  .profile-settings-modal .form-control {
+    border-radius: 12px;
+  }
+
+  .profile-settings-modal .btn-close {
+    filter: none;
+  }
+
+  .modal-backdrop.show {
+    opacity: 0.55;
+    backdrop-filter: blur(8px);
+  }
+
+  @media (max-width: 991.98px) {
+    .settings-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .profile-education-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="section-title">Профиль студента</h1>
+    <p class="section-subtitle">Ваша академическая карточка, навыки и портфолио проектов.</p>
+  </div>
+</div>
+
+<ul class="nav nav-tabs mb-3" id="studentProfileTabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button
+      class="nav-link {% if active_tab == 'profile' %}active{% endif %}"
+      id="profile-tab"
+      data-bs-toggle="tab"
+      data-bs-target="#profile-pane"
+      type="button"
+      role="tab"
+      aria-controls="profile-pane"
+      aria-selected="{% if active_tab == 'profile' %}true{% else %}false{% endif %}"
+    >
+      Профиль
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button
+      class="nav-link {% if active_tab == 'applications' %}active{% endif %}"
+      id="applications-tab"
+      data-bs-toggle="tab"
+      data-bs-target="#applications-pane"
+      type="button"
+      role="tab"
+      aria-controls="applications-pane"
+      aria-selected="{% if active_tab == 'applications' %}true{% else %}false{% endif %}"
+    >
+      Мои заявки
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button
+      class="nav-link {% if active_tab == 'settings' %}active{% endif %}"
+      id="settings-tab"
+      data-bs-toggle="tab"
+      data-bs-target="#settings-pane"
+      type="button"
+      role="tab"
+      aria-controls="settings-pane"
+      aria-selected="{% if active_tab == 'settings' %}true{% else %}false{% endif %}"
+    >
+      Настройки
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content" id="studentProfileTabsContent">
+  <div class="tab-pane fade {% if active_tab == 'profile' %}show active{% endif %}" id="profile-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+    <div class="row g-3">
+      <div class="col-lg-4">
+        <div class="card profile-sidebar-card mb-3">
+          <div class="card-body text-center profile-sidebar-hero">
+            <div class="d-flex justify-content-center mb-3">
+              {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}" alt="Аватар" class="profile-summary-avatar border">
+              {% else %}
+                <div class="profile-summary-avatar-fallback">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1z"/>
+                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                  </svg>
+                </div>
+              {% endif %}
+            </div>
+            <span class="profile-role-badge">Студент</span>
+            <h2 class="h4 mb-1">{{ profile.full_name }}</h2>
+            <div class="text-muted mb-1">{{ profile.user.email }}</div>
+            <div class="text-muted small">🎓 {{ profile.university }} · {{ profile.course }} курс</div>
+            <div class="row g-2 mt-3">
+              <div class="col-4 profile-mini-stat">
+                <div class="fw-bold">{{ applications|length }}</div>
+                <div class="text-muted small">Откликов</div>
+              </div>
+              <div class="col-4 profile-mini-stat">
+                <div class="fw-bold">{{ projects|length }}</div>
+                <div class="text-muted small">Проектов</div>
+              </div>
+              <div class="col-4 profile-mini-stat">
+                <div class="fw-bold">{{ skills|length }}</div>
+                <div class="text-muted small">Навыков</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card profile-sidebar-card mb-3">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h3 class="h6 mb-0">Заполненность профиля</h3>
+              <span class="fw-bold text-primary">{{ completion_percent }}%</span>
+            </div>
+            <div class="profile-completion-track mb-3">
+              <div class="profile-completion-fill" style="width: {{ completion_percent }}%;"></div>
+            </div>
+            <div class="d-grid gap-2">
+              {% for item in completion_items %}
+                <div class="profile-completion-item small {% if item.done %}done{% endif %}">
+                  <span class="profile-completion-mark">{% if item.done %}✓{% else %}○{% endif %}</span>
+                  <span>{{ item.label }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="card profile-sidebar-card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="profile-sidebar-section-title mb-0">Языки</h3>
+              <button
+                class="btn btn-sm profile-action-btn"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#languagesEditForm"
+                aria-expanded="false"
+                aria-controls="languagesEditForm"
+              >
+                Редактировать
+              </button>
+            </div>
+            <div class="profile-language-chips mb-3">
+              {% for language in languages %}
+                <span class="profile-language-chip">{{ language }}</span>
+              {% endfor %}
+            </div>
+            <div class="pt-3 border-top">
+              <h3 class="profile-sidebar-section-title">Сильные навыки</h3>
+              {% if top_skills %}
+                <div class="profile-top-skills">
+                  {% for top_skill in top_skills %}
+                    <span class="profile-top-skill-chip">{{ top_skill.skill.name }} · {{ top_skill.level }}/5</span>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="text-muted small">Добавьте навыки, чтобы здесь появились ваши сильные стороны.</div>
+              {% endif %}
+            </div>
+            <div class="collapse mt-3" id="languagesEditForm">
+              <div class="project-builder p-3">
+                <form method="post" novalidate>
+                  {% csrf_token %}
+                  <input type="hidden" name="form_type" value="languages_quick_edit">
+                  <label class="form-label" for="languages_quick_input">Языки (каждый язык с уровня на новой строке)</label>
+                  <textarea
+                    id="languages_quick_input"
+                    name="languages"
+                    class="form-control"
+                    rows="4"
+                    placeholder="Русский (родной)&#10;Английский (B2)&#10;Немецкий (A1)"
+                  >{{ languages_raw }}</textarea>
+                  <div class="d-flex gap-2 mt-3">
+                    <button type="submit" class="btn btn-sm profile-action-btn-solid">Сохранить</button>
+                    <button
+                      type="button"
+                      class="btn btn-sm profile-action-btn"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#languagesEditForm"
+                      aria-expanded="true"
+                      aria-controls="languagesEditForm"
+                    >
+                      Отмена
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="card profile-main-card">
+          <div class="card-body p-4">
+            <div class="profile-main-section">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="h5 mb-0 profile-section-title">
+                  <span class="profile-section-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                      <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                      <path d="M14 14s-1-4-6-4-6 4-6 4 1 1 6 1 6-1 6-1"/>
+                    </svg>
+                  </span>
+                  О себе
+                </h3>
+                <button
+                  class="btn btn-sm profile-action-btn"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#aboutEditForm"
+                  aria-expanded="false"
+                  aria-controls="aboutEditForm"
+                >
+                  Редактировать
+                </button>
+              </div>
+              {% if profile.bio %}
+                <div class="text-muted">{{ profile.bio|linebreaks }}</div>
+              {% else %}
+                <div class="profile-empty-state">
+                  <strong>Описание пока не заполнено</strong>
+                  Коротко расскажите о себе, направлении интереса и формате стажировки, который вам подходит.
+                </div>
+              {% endif %}
+              <div class="collapse mt-3" id="aboutEditForm">
+                <div class="project-builder p-3">
+                  <form method="post" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="about_quick_edit">
+                    <label class="form-label" for="quick_bio_input">О себе</label>
+                    <textarea id="quick_bio_input" name="bio" class="form-control" rows="4">{{ profile.bio }}</textarea>
+                    <div class="d-flex gap-2 mt-3">
+                      <button type="submit" class="btn btn-sm profile-action-btn-solid">Сохранить</button>
+                      <button
+                        type="button"
+                        class="btn btn-sm profile-action-btn"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#aboutEditForm"
+                        aria-expanded="true"
+                        aria-controls="aboutEditForm"
+                      >
+                        Отмена
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-main-section">
+              <h3 class="h5 mb-3 profile-section-title">
+                <span class="profile-section-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0l7.5-3a.5.5 0 0 0 .025-.917z"/>
+                    <path d="M4.176 9.032a.5.5 0 0 0-.656.475v2.15c0 .31.18.592.461.722C5.028 12.86 6.643 13.5 8 13.5s2.972-.64 4.019-1.121a.8.8 0 0 0 .461-.722v-2.15a.5.5 0 0 0-.656-.475l-3.638 1.455a.5.5 0 0 1-.372 0z"/>
+                  </svg>
+                </span>
+                Образование
+              </h3>
+              <div class="profile-education-grid">
+                <div class="profile-education-cell">
+                  <div class="profile-education-label">Университет</div>
+                  <div class="profile-education-value">{{ profile.university|default:"Не указан" }}</div>
+                  <div class="text-muted small mt-1">{{ profile.course }} курс обучения</div>
+                </div>
+                <div class="profile-education-cell">
+                  <div class="profile-education-label">Навыков</div>
+                  <div class="profile-education-value">{{ skills|length }}</div>
+                  <div class="text-muted small mt-1">в профиле</div>
+                </div>
+                <div class="profile-education-cell">
+                  <div class="profile-education-label">Средний уровень</div>
+                  <div class="profile-education-value">{{ avg_skill_level }}/5</div>
+                  <div class="text-muted small mt-1">по навыкам</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-main-section">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="h5 mb-0 profile-section-title">
+                  <span class="profile-section-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                      <path d="M9.669.864 8 0 6.331.864 4.466.527 3.452 2.129l-1.79.622-.154 1.89L.385 6.164 1.2 7.875l-.815 1.711 1.123 1.524.154 1.89 1.79.622 1.014 1.602 1.865-.337L8 15.75l1.669-.864 1.865.337 1.014-1.602 1.79-.622.154-1.89 1.123-1.524-.815-1.711.815-1.711-1.123-1.524-.154-1.89-1.79-.622L11.534.527z"/>
+                    </svg>
+                  </span>
+                  Навыки
+                </h3>
+                <a class="btn btn-sm profile-action-btn" href="{% url 'skills:student_skill_list' %}">Управлять</a>
+              </div>
+              {% if skills %}
+                <div class="d-flex flex-wrap gap-2">
+                  {% for student_skill in skills %}
+                    <span class="profile-skill-chip">
+                      <span class="profile-skill-name">
+                        <span>{{ student_skill.skill.name }}</span>
+                        <span class="profile-skill-category">{{ student_skill.skill.get_category_display }}</span>
+                      </span>
+                      <span class="profile-level-dots" aria-hidden="true">
+                        <span class="profile-level-dot active"></span>
+                        <span class="profile-level-dot {% if student_skill.level >= 2 %}active{% endif %}"></span>
+                        <span class="profile-level-dot {% if student_skill.level >= 3 %}active{% endif %}"></span>
+                        <span class="profile-level-dot {% if student_skill.level >= 4 %}active{% endif %}"></span>
+                        <span class="profile-level-dot {% if student_skill.level >= 5 %}active{% endif %}"></span>
+                      </span>
+                      <span class="profile-level-pill">{{ student_skill.level }}/5</span>
+                    </span>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="profile-empty-state">
+                  <strong>Навыки пока не добавлены</strong>
+                  Добавьте технологии и уровни владения, чтобы система могла считать рекомендации точнее.
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="profile-main-section">
+              <h3 class="h5 mb-3 profile-section-title">
+                <span class="profile-section-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H2.5A1.5 1.5 0 0 0 1 4.5v8A1.5 1.5 0 0 0 2.5 14h11a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 13.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1z"/>
+                  </svg>
+                </span>
+                Проекты и опыт
+              </h3>
+              <div class="d-grid gap-3">
+                {% for project in projects %}
+                  <div class="portfolio-item">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                      <div>
+                        <div class="fw-bold">{{ project.title }}</div>
+                        {% if project.role %}
+                          <div class="text-primary small fw-semibold">{{ project.role }}</div>
+                        {% endif %}
+                      </div>
+                      <div class="text-muted small text-end">
+                        {% if project.start_date %}{{ project.start_date|date:"M Y" }}{% endif %}
+                        {% if project.end_date %} — {{ project.end_date|date:"M Y" }}{% elif project.is_current %} — по н.в.{% endif %}
+                      </div>
+                    </div>
+                    {% if project.description %}
+                      <p class="text-muted mt-2 mb-2">{{ project.description }}</p>
+                    {% endif %}
+                    <form method="post" class="d-inline">
+                      {% csrf_token %}
+                      <input type="hidden" name="form_type" value="project_delete">
+                      <input type="hidden" name="project_pk" value="{{ project.pk }}">
+                      <button type="submit" class="btn btn-sm btn-outline-secondary">Удалить</button>
+                    </form>
+                  </div>
+                {% empty %}
+                  <div class="profile-empty-state">
+                    <strong>Портфолио пока пустое</strong>
+                    Добавьте учебный проект, хакатон или практический опыт. Это поможет работодателю быстрее оценить ваш профиль.
+                  </div>
+                {% endfor %}
+              </div>
+
+              <button class="project-add-trigger mt-3" type="button" data-bs-toggle="collapse" data-bs-target="#projectBuilderForm" aria-expanded="false" aria-controls="projectBuilderForm">
+                <span class="me-2">+</span> Добавить проект или опыт
+              </button>
+
+              <div class="collapse {% if project_form.errors %}show{% endif %}" id="projectBuilderForm">
+                <div class="project-builder p-3">
+                  <h4 class="h6 mb-2">Новый проект</h4>
+                  <p class="text-muted small mb-3">Заполните только нужные поля. Даты можно оставить пустыми.</p>
+                  <form method="post" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="project_create">
+                    <div class="row g-3">
+                      {% for field in project_form %}
+                        <div class="{% if field.name == 'description' %}col-12{% elif field.name == 'is_current' %}col-12{% else %}col-md-6{% endif %}">
+                          {% if field.name == 'is_current' %}
+                            <div class="form-check mt-2">
+                              {{ field }}
+                              <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            </div>
+                          {% else %}
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                          {% endif %}
+                          {% for error in field.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                          {% endfor %}
+                        </div>
+                      {% endfor %}
+                    </div>
+                    <div class="d-flex gap-2 mt-3">
+                      <button type="submit" class="btn btn-primary">Добавить</button>
+                      <a class="btn btn-outline-secondary" href="{% url 'profiles:student_profile_detail' %}?tab=profile">Очистить</a>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane fade {% if active_tab == 'applications' %}show active{% endif %}" id="applications-pane" role="tabpanel" aria-labelledby="applications-tab" tabindex="0">
+    <div class="student-applications-panel">
+      <div class="student-applications-tab-header">
+        <div>
+          <h2>Мои заявки</h2>
+          <p>Отслеживайте статусы откликов прямо в профиле.</p>
+        </div>
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'vacancies:public_list' %}">Смотреть вакансии</a>
+      </div>
+      {% include "applications/_student_application_cards.html" %}
+    </div>
+  </div>
+
+  <div class="tab-pane fade {% if active_tab == 'settings' %}show active{% endif %}" id="settings-pane" role="tabpanel" aria-labelledby="settings-tab" tabindex="0">
+    <div class="profile-settings-preview">
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div class="d-flex align-items-start gap-3">
+          <span class="profile-settings-preview-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+              <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a1.873 1.873 0 0 1-2.428 1.153l-.3-.112c-1.75-.653-3.544 1.141-2.891 2.891l.112.3a1.873 1.873 0 0 1-1.153 2.428l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a1.873 1.873 0 0 1 1.153 2.428l-.112.3c-.653 1.75 1.141 3.544 2.891 2.891l.3-.112a1.873 1.873 0 0 1 2.428 1.153l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a1.873 1.873 0 0 1 2.428-1.153l.3.112c1.75.653 3.544-1.141 2.891-2.891l-.112-.3a1.873 1.873 0 0 1 1.153-2.428l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a1.873 1.873 0 0 1-1.153-2.428l.112-.3c.653-1.75-1.141-3.544-2.891-2.891l-.3.112a1.873 1.873 0 0 1-2.428-1.153z"/>
+            </svg>
+          </span>
+          <div>
+            <h2 class="h4 mb-1">Настройки профиля</h2>
+            <p class="text-muted mb-0">Основные данные редактируются в отдельном окне, чтобы профиль оставался чистым и удобным.</p>
+          </div>
+        </div>
+        <button class="btn profile-action-btn-solid" type="button" data-bs-toggle="modal" data-bs-target="#studentSettingsModal">
+          Открыть настройки
+        </button>
+      </div>
+      <div class="row g-2 mt-3">
+        <div class="col-md-4">
+          <div class="profile-settings-chip">
+            <div class="text-muted small">Имя</div>
+            <div class="fw-bold text-truncate">{{ profile.full_name }}</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="profile-settings-chip">
+            <div class="text-muted small">Почта</div>
+            <div class="fw-bold text-truncate">{{ profile.user.email }}</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="profile-settings-chip">
+            <div class="text-muted small">Учеба</div>
+            <div class="fw-bold text-truncate">{{ profile.university }} · {{ profile.course }} курс</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade profile-settings-modal" id="studentSettingsModal" tabindex="-1" aria-labelledby="studentSettingsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="form_type" value="settings">
+        <div class="modal-header">
+          <div>
+            <h2 class="modal-title h5 fw-bold" id="studentSettingsModalLabel">Настройки профиля</h2>
+            <p class="text-muted small mb-0">Обновите основные данные, которые видны в вашей карточке студента.</p>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            {% if profile.avatar %}
+              <img src="{{ profile.avatar.url }}" alt="Аватар" class="settings-avatar border">
+            {% else %}
+              <div class="settings-avatar-fallback">
+                <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1z"/>
+                  <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                </svg>
+              </div>
+            {% endif %}
+            <div>
+              <div class="fw-bold">{{ profile.full_name|default:"Студент" }}</div>
+              <div class="text-muted small">{{ profile.user.email }}</div>
+            </div>
+          </div>
+
+          <div class="settings-section-title">Аккаунт</div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="{{ settings_form.full_name.id_for_label }}">{{ settings_form.full_name.label }}</label>
+              {{ settings_form.full_name }}
+              {% for error in settings_form.full_name.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="{{ settings_form.email.id_for_label }}">{{ settings_form.email.label }}</label>
+              {{ settings_form.email }}
+              {% for error in settings_form.email.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="{{ settings_form.avatar.id_for_label }}">{{ settings_form.avatar.label }}</label>
+              {{ settings_form.avatar }}
+              {% for error in settings_form.avatar.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+
+          <div class="settings-divider"></div>
+
+          <div class="settings-section-title">Учебная информация</div>
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label" for="{{ settings_form.university.id_for_label }}">{{ settings_form.university.label }}</label>
+              {{ settings_form.university }}
+              {% for error in settings_form.university.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="{{ settings_form.course.id_for_label }}">{{ settings_form.course.label }}</label>
+              {{ settings_form.course }}
+              {% for error in settings_form.course.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="{{ settings_form.bio.id_for_label }}">{{ settings_form.bio.label }}</label>
+              {{ settings_form.bio }}
+              {% for error in settings_form.bio.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="submit" class="btn settings-submit text-white">Сохранить изменения</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% if open_settings_modal %}
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var modalEl = document.getElementById("studentSettingsModal");
+      if (modalEl && window.bootstrap) {
+        window.bootstrap.Modal.getOrCreateInstance(modalEl).show();
+      }
+    });
+  </script>
+{% endif %}
+{% endblock %}

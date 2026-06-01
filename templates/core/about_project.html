@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <h1 class="section-title mb-2">О проекте</h1>
+    <p class="section-subtitle mb-4">
+      InternLAB — учебная веб-платформа для сопоставления студентов и вакансий.
+      Проект выполнен в формате дипломной работы и построен как монолитное Django-приложение.
+    </p>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="p-3 border rounded-3 h-100">
+          <h2 class="h6 mb-2">Цель</h2>
+          <p class="mb-0 text-muted">
+            Помочь студентам находить подходящие вакансии, а работодателям — релевантных кандидатов.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="p-3 border rounded-3 h-100">
+          <h2 class="h6 mb-2">Подход</h2>
+          <p class="mb-0 text-muted">
+            Используется прозрачная взвешенная модель сопоставления навыков, понятная для объяснения на защите.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

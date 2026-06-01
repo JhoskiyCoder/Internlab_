@@ -1,0 +1,57 @@
+<div class="student-applications-list">
+  {% for application in applications %}
+    <article class="student-application-card">
+      <div class="student-application-main">
+        <span class="student-application-logo">
+          {{ application.vacancy.employer.company_name|slice:":1"|upper }}
+        </span>
+        <div class="student-application-content">
+          <div class="student-application-topline">
+            <h3>{{ application.vacancy.title }}</h3>
+            <span class="student-application-status status-{{ application.status }}">
+              {{ application.get_status_display }}
+            </span>
+          </div>
+          <div class="student-application-company">
+            {{ application.vacancy.employer.company_name }}
+          </div>
+          <div class="student-application-meta">
+            <span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+              </svg>
+              {{ application.vacancy.display_location }}
+            </span>
+            <span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+              </svg>
+              {{ application.created_at|date:"d.m.Y" }}
+            </span>
+            <span>{{ application.vacancy.get_internship_type_display }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="student-application-actions">
+        <a class="student-application-link" href="{% url 'vacancies:public_detail' application.vacancy.pk %}">
+          Открыть
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+            <path fill-rule="evenodd" d="M6.646 3.646a.5.5 0 0 1 .708 0l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L10.293 8 6.646 4.354a.5.5 0 0 1 0-.708"/>
+          </svg>
+        </a>
+      </div>
+    </article>
+  {% empty %}
+    <div class="student-applications-empty">
+      <div class="student-applications-empty-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H2.5A1.5 1.5 0 0 0 1 4.5v8A1.5 1.5 0 0 0 2.5 14h11a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 13.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1zM6 3v-.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V3z"/>
+        </svg>
+      </div>
+      <h3>Заявок пока нет</h3>
+      <p>Выберите подходящую стажировку и отправьте первый отклик.</p>
+      <a class="btn btn-primary" href="{% url 'vacancies:public_list' %}">Смотреть вакансии</a>
+    </div>
+  {% endfor %}
+</div>

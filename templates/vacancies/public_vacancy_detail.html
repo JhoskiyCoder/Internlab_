@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% load l10n static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/vacancies_public_list.css' %}?v=color-lift-1">
+
+<div class="vacancy-detail-shell">
+  <div class="vacancy-detail-hero mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-4">
+      <div class="d-flex gap-3 align-items-start">
+        <span class="vacancy-detail-logo">
+          {% if vacancy.employer.logo %}
+            <img src="{{ vacancy.employer.logo.url }}" alt="{{ vacancy.employer.company_name }}">
+          {% else %}
+            {{ vacancy.employer.company_name|slice:":1"|upper }}
+          {% endif %}
+        </span>
+        <div>
+          <div class="vacancy-detail-company">{{ vacancy.employer.company_name }}</div>
+          <h1 class="vacancy-detail-title">{{ vacancy.title }}</h1>
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            <span class="vacancy-detail-chip">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+              </svg>
+              {{ city }}
+            </span>
+            <span class="vacancy-detail-chip">{{ vacancy.get_internship_type_display }}</span>
+            <span class="vacancy-detail-chip">{{ published_label }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="vacancy-detail-actions">
+        {% if user.is_authenticated and user.role == "student" %}
+          <form method="post" action="{% url 'vacancies:toggle_favorite' vacancy.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button
+              type="submit"
+              class="vacancy-detail-favorite {% if is_favorite %}active{% endif %}"
+              aria-label="{% if is_favorite %}Убрать из избранного{% else %}Добавить в избранное{% endif %}"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M2 2v12l6-3 6 3V2z"/>
+              </svg>
+            </button>
+          </form>
+        {% endif %}
+        <a class="btn btn-outline-secondary" href="{% url 'vacancies:public_list' %}">Назад</a>
+        {% if user.is_authenticated and user.role == 'student' %}
+          {% if already_applied %}
+            <span class="btn btn-secondary disabled">Заявка отправлена</span>
+          {% else %}
+            <a class="btn btn-primary" href="{% url 'applications:student_apply' vacancy.pk %}">Откликнуться</a>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <section class="vacancy-detail-panel mb-4">
+        <h2>Описание</h2>
+        <div class="vacancy-prose-card">
+          <span class="vacancy-prose-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M2 2.5A1.5 1.5 0 0 1 3.5 1h7A1.5 1.5 0 0 1 12 2.5V4h.5A1.5 1.5 0 0 1 14 5.5v8A1.5 1.5 0 0 1 12.5 15h-9A1.5 1.5 0 0 1 2 13.5zm1.5-.5a.5.5 0 0 0-.5.5v11a.5.5 0 0 0 .5.5H12V5.5a.5.5 0 0 0-.5-.5H11V2.5a.5.5 0 0 0-.5-.5z"/>
+              <path d="M4.5 4a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5"/>
+            </svg>
+          </span>
+          <div class="vacancy-detail-text">{{ vacancy.description|linebreaks }}</div>
+        </div>
+      </section>
+
+      <section class="vacancy-detail-panel mb-4">
+        <h2>Требования</h2>
+        {% if requirement_items %}
+          <div class="vacancy-requirements-grid">
+            {% for item in requirement_items %}
+              <div class="vacancy-requirement-item">
+                <span class="vacancy-requirement-check">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M6.97 10.03a.75.75 0 0 0 1.08-.02l3.992-4.99a.75.75 0 0 0-1.17-.94L7.477 8.324 5.384 6.57a.75.75 0 1 0-.964 1.15z"/>
+                  </svg>
+                </span>
+                <span>{{ item }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="vacancy-prose-card muted">
+            <div class="vacancy-detail-text">Требования пока не указаны.</div>
+          </div>
+        {% endif %}
+      </section>
+
+      <section class="vacancy-detail-panel">
+        <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+          <h2 class="mb-0">Ключевые навыки</h2>
+          <span class="vacancy-detail-muted">{{ required_skills|length }} навыков</span>
+        </div>
+        <div class="vacancy-skill-grid">
+          {% for vacancy_skill in required_skills %}
+            <div class="vacancy-skill-card">
+              <div>
+                <div class="vacancy-skill-name">{{ vacancy_skill.skill.name }}</div>
+                <div class="vacancy-skill-meta">{{ vacancy_skill.skill.get_category_display }}</div>
+              </div>
+              <div class="text-end">
+                <span class="vacancy-skill-level">Ур. {{ vacancy_skill.required_level }}</span>
+                {% if vacancy_skill.is_critical %}
+                  <div class="vacancy-skill-critical">Критичный</div>
+                {% endif %}
+              </div>
+            </div>
+          {% empty %}
+            <div class="dashboard-empty">Работодатель пока не добавил навыки.</div>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+
+    <div class="col-lg-4">
+      <aside class="vacancy-detail-sidebar">
+        {% if match_score is not None %}
+          <div class="vacancy-detail-score" style="--score: {{ match_score|unlocalize }};">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span>Ваше совпадение</span>
+              <strong>{{ match_score|floatformat:0|unlocalize }}%</strong>
+            </div>
+            <div class="internship-list-score-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ match_score|unlocalize }}">
+              <div class="internship-list-score-fill" style="width: {{ match_score|unlocalize }}%;"></div>
+              <span class="internship-list-score-text">{{ match_score|floatformat:0|unlocalize }}%</span>
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="vacancy-detail-summary">
+          <h2>Кратко</h2>
+          <div class="vacancy-summary-row">
+            <span>Компания</span>
+            <strong>{{ vacancy.employer.company_name }}</strong>
+          </div>
+          <div class="vacancy-summary-row">
+            <span>Локация</span>
+            <strong>{{ vacancy.display_location }}</strong>
+          </div>
+          <div class="vacancy-summary-row">
+            <span>Формат</span>
+            <strong>{{ vacancy.get_internship_type_display }}</strong>
+          </div>
+          <div class="vacancy-summary-row">
+            <span>Статус</span>
+            <strong>{{ vacancy.get_status_display }}</strong>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+{% endblock %}

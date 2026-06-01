@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card border-danger shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h5 mb-3">Удалить требуемый навык</h1>
+        <p>
+          Вы уверены, что хотите удалить
+          <strong>{{ vacancy_skill.skill.name }}</strong>
+          из вакансии <strong>{{ vacancy.title }}</strong>?
+        </p>
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Удалить</button>
+          <a class="btn btn-outline-secondary" href="{% url 'vacancies:employer_vacancy_detail' vacancy.pk %}">Отмена</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

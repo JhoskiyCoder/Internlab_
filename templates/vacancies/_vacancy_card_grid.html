@@ -1,0 +1,186 @@
+{% load l10n %}
+
+<div class="row g-3">
+  {% for card in vacancy_cards %}
+    <div class="col-lg-6">
+      <div class="card internship-list-card h-100" id="vacancy-{{ card.vacancy.pk }}">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+            <div class="d-flex gap-3 align-items-start">
+              <span class="internship-list-logo">
+                {% if card.vacancy.employer.logo %}
+                  <img src="{{ card.vacancy.employer.logo.url }}" alt="{{ card.vacancy.employer.company_name }}">
+                {% else %}
+                  {{ card.vacancy.employer.company_name|slice:":1"|upper }}
+                {% endif %}
+              </span>
+              <div>
+                <div class="internship-list-company">{{ card.vacancy.employer.company_name }}</div>
+                <h2 class="internship-list-title">{{ card.vacancy.title }}</h2>
+              </div>
+            </div>
+            {% if user.is_authenticated and user.role == "student" %}
+              <form class="internship-favorite-form" method="post" action="{% url 'vacancies:toggle_favorite' card.vacancy.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}#vacancy-{{ card.vacancy.pk }}">
+                <button
+                  type="submit"
+                  class="internship-favorite-btn {% if card.vacancy.id in favorite_vacancy_ids %}active{% endif %}"
+                  aria-label="{% if card.vacancy.id in favorite_vacancy_ids %}Убрать из избранного{% else %}Добавить в избранное{% endif %}"
+                  title="{% if card.vacancy.id in favorite_vacancy_ids %}Убрать из избранного{% else %}Добавить в избранное{% endif %}"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    {% if card.vacancy.id in favorite_vacancy_ids %}
+                      <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2"/>
+                    {% else %}
+                      <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2m2-1h8a1 1 0 0 1 1 1v12.657l-4.76-2.596a.5.5 0 0 0-.48 0L3 14.657V2a1 1 0 0 1 1-1"/>
+                    {% endif %}
+                  </svg>
+                </button>
+              </form>
+            {% endif %}
+          </div>
+
+          {% if card.score is not None %}
+            <div class="mb-3">
+              <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>Совпадение</span>
+              </div>
+              <div class="internship-list-score-track" style="--score: {{ card.score|unlocalize }};" role="progressbar" aria-label="Процент совпадения" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ card.score|unlocalize }}">
+                <div class="internship-list-score-fill" style="width: {{ card.score|unlocalize }}%;"></div>
+                <span class="internship-list-score-text">{{ card.score|floatformat:0|unlocalize }}%</span>
+              </div>
+            </div>
+          {% endif %}
+
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            {% for requirement in card.vacancy.required_skills.all|slice:":3" %}
+              <span class="internship-list-skill-chip">{{ requirement.skill.name }}</span>
+            {% empty %}
+              <span class="internship-list-skill-chip">Навыки не указаны</span>
+            {% endfor %}
+            {% if card.vacancy.required_skills.all|length > 3 %}
+              <span class="internship-list-skill-chip">+{{ card.vacancy.required_skills.all|length|add:"-3" }}</span>
+            {% endif %}
+          </div>
+
+          <div class="d-flex flex-wrap align-items-center gap-3 internship-list-meta mb-3">
+            <span>📍 {{ card.city }}</span>
+            <span>{{ card.published_label }}</span>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-auto pt-2">
+            <span class="internship-list-type-chip">{{ card.vacancy.get_internship_type_display }}</span>
+            <button
+              class="btn btn-sm internship-open-btn"
+              type="button"
+              data-bs-toggle="modal"
+              data-bs-target="#vacancyPreviewModal{{ card.vacancy.pk }}"
+            >
+              Подробнее
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade vacancy-preview-modal" id="vacancyPreviewModal{{ card.vacancy.pk }}" tabindex="-1" aria-labelledby="vacancyPreviewModalLabel{{ card.vacancy.pk }}" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="d-flex align-items-start gap-3">
+              <span class="vacancy-preview-logo">
+                {% if card.vacancy.employer.logo %}
+                  <img src="{{ card.vacancy.employer.logo.url }}" alt="{{ card.vacancy.employer.company_name }}">
+                {% else %}
+                  {{ card.vacancy.employer.company_name|slice:":1"|upper }}
+                {% endif %}
+              </span>
+              <div>
+                <div class="vacancy-preview-company">{{ card.vacancy.employer.company_name }}</div>
+                <h2 class="modal-title vacancy-preview-title" id="vacancyPreviewModalLabel{{ card.vacancy.pk }}">
+                  {{ card.vacancy.title }}
+                </h2>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                  <span class="vacancy-preview-chip">📍 {{ card.city }}</span>
+                  <span class="vacancy-preview-chip">{{ card.vacancy.get_internship_type_display }}</span>
+                  <span class="vacancy-preview-chip">{{ card.published_label }}</span>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+          </div>
+          <div class="modal-body">
+            {% if card.score is not None %}
+              <div class="vacancy-preview-score mb-3" style="--score: {{ card.score|unlocalize }};">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span>Ваше совпадение</span>
+                  <strong>{{ card.score|floatformat:0|unlocalize }}%</strong>
+                </div>
+                <div class="internship-list-score-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ card.score|unlocalize }}">
+                  <div class="internship-list-score-fill" style="width: {{ card.score|unlocalize }}%;"></div>
+                  <span class="internship-list-score-text">{{ card.score|floatformat:0|unlocalize }}%</span>
+                </div>
+              </div>
+            {% endif %}
+
+            <div class="row g-3">
+              <div class="col-lg-7">
+                <section class="vacancy-preview-section">
+                  <h3>Описание</h3>
+                  <div class="vacancy-preview-text">{{ card.vacancy.description|linebreaks }}</div>
+                </section>
+              </div>
+              <div class="col-lg-5">
+                <section class="vacancy-preview-section h-100">
+                  <h3>Ключевые навыки</h3>
+                  <div class="d-flex flex-wrap gap-2">
+                    {% for requirement in card.vacancy.required_skills.all %}
+                      <span class="internship-list-skill-chip">
+                        {{ requirement.skill.name }} · ур. {{ requirement.required_level }}
+                      </span>
+                    {% empty %}
+                      <span class="text-muted small">Навыки пока не указаны.</span>
+                    {% endfor %}
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <section class="vacancy-preview-section mt-3">
+              <h3>Требования</h3>
+              {% if card.requirement_items %}
+                <div class="vacancy-preview-requirements">
+                  {% for item in card.requirement_items %}
+                    <div class="vacancy-preview-requirement">
+                      <span>✓</span>
+                      <strong>{{ item }}</strong>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="text-muted small">Требования пока не указаны.</div>
+              {% endif %}
+            </section>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Закрыть</button>
+            {% if user.is_authenticated and user.role == "student" %}
+              {% if card.already_applied %}
+                <span class="btn btn-secondary disabled">Заявка отправлена</span>
+              {% else %}
+                <a class="btn btn-primary" href="{% url 'applications:student_apply' card.vacancy.pk %}">Откликнуться</a>
+              {% endif %}
+            {% endif %}
+            <a class="btn btn-outline-primary" href="{% url 'vacancies:public_detail' card.vacancy.pk %}">Открыть страницу</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info mb-0">{{ empty_message }}</div>
+    </div>
+  {% endfor %}
+</div>

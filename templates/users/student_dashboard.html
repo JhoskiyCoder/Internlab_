@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="section-title">Кабинет студента</h1>
+    <p class="section-subtitle">Управляйте профилем, навыками и персональными рекомендациями.</p>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6 col-xl-3">
+    <a class="card metric-card dashboard-card h-100 text-decoration-none" href="{% url 'profiles:student_profile_detail' %}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="metric-label">Профиль</div>
+          <span class="badge text-bg-light border">Студент</span>
+        </div>
+        <div class="metric-value fs-4">Мой профиль</div>
+        <p class="section-subtitle mt-2">Обновляйте данные об учебе и краткую информацию о себе.</p>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <a class="card metric-card dashboard-card h-100 text-decoration-none" href="{% url 'skills:student_skill_list' %}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="metric-label">Навыки</div>
+          <span class="badge text-bg-light border">Стек</span>
+        </div>
+        <div class="metric-value fs-4">Мои навыки</div>
+        <p class="section-subtitle mt-2">Поддерживайте актуальный стек и уровни владения.</p>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <a class="card metric-card dashboard-card h-100 text-decoration-none" href="{% url 'matching:student_recommendations' %}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="metric-label">Сопоставление</div>
+          <span class="badge text-bg-primary">Балл</span>
+        </div>
+        <div class="metric-value fs-4">Рекомендации</div>
+        <p class="section-subtitle mt-2">Смотрите вакансии, отсортированные по уровню совпадения.</p>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <a class="card metric-card dashboard-card h-100 text-decoration-none" href="{% url 'vacancies:public_list' %}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="metric-label">Поиск</div>
+          <span class="badge text-bg-light border">Открыты</span>
+        </div>
+        <div class="metric-value fs-4">Стажировки</div>
+        <p class="section-subtitle mt-2">Просматривайте все опубликованные возможности.</p>
+      </div>
+    </a>
+  </div>
+</div>
+{% endblock %}

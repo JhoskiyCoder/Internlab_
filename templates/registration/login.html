@@ -1,0 +1,156 @@
+{% extends "registration/auth_base.html" %}
+
+{% block title %}Вход | InternLAB{% endblock %}
+
+{% block content %}
+<style>
+  .auth-page {
+    width: 100vw;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+
+  .auth-page .auth-modal-content,
+  .auth-page .auth-modal-content > .row {
+    min-height: 100dvh;
+  }
+
+  .auth-page .auth-modal-content {
+    border-radius: 0;
+  }
+
+  .auth-page-close {
+    color: var(--app-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    text-decoration: none;
+  }
+
+  .auth-page-close:hover {
+    color: var(--app-text);
+    background: var(--app-hover-bg);
+  }
+
+  .auth-error-slot {
+    min-height: 60px;
+    margin-bottom: 1rem;
+  }
+
+  .auth-error-slot.empty .alert {
+    visibility: hidden;
+  }
+
+  .auth-error-slot .alert {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 991px) {
+    .auth-page {
+      overflow: visible;
+    }
+  }
+</style>
+
+<div class="auth-page">
+  <div class="auth-modal-content">
+    <div class="row g-0">
+      <div class="col-lg-6 d-none d-lg-block">
+        <div class="auth-modal-hero h-100">
+          <div class="auth-modal-hero-inner">
+            <div class="auth-modal-brand">
+              <span class="auth-modal-brand-icon">🎓</span>
+              <span>InternLAB</span>
+            </div>
+            <h3>Найди стажировку своей мечты</h3>
+            <p class="mb-3">Система подбора стажировок на основе вашего профиля и навыков.</p>
+            <ul>
+              <li>Умный подбор вакансий под ваш профиль</li>
+              <li>Отслеживание откликов и статусов</li>
+              <li>Персональные рекомендации</li>
+              <li>Простой и понятный интерфейс</li>
+            </ul>
+            <div class="auth-hero-stats">
+              <div class="auth-hero-stat">
+                <div class="auth-hero-stat-value">500+</div>
+                <div class="auth-hero-stat-label">Вакансий</div>
+              </div>
+              <div class="auth-hero-stat">
+                <div class="auth-hero-stat-value">12K+</div>
+                <div class="auth-hero-stat-label">Студентов</div>
+              </div>
+              <div class="auth-hero-stat">
+                <div class="auth-hero-stat-value">94%</div>
+                <div class="auth-hero-stat-label">Трудоустроено</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="auth-modal-side">
+          <div class="auth-modal-side-inner">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <h5 class="modal-title fw-bold">Добро пожаловать</h5>
+                <p class="text-muted mb-0">Выберите действие, чтобы продолжить</p>
+              </div>
+              <a class="auth-page-close" href="{% url 'core:home' %}" aria-label="Закрыть страницу входа">
+                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M2.146 2.146a.5.5 0 0 1 .708 0L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854a.5.5 0 0 1 0-.708"/>
+                </svg>
+              </a>
+            </div>
+
+            <div class="auth-switch-grid">
+              <button type="button" class="btn btn-primary auth-switch-btn">Войти</button>
+              <a class="btn btn-outline-secondary auth-switch-btn" href="{% url 'users:register' %}">Создать аккаунт</a>
+            </div>
+
+            <div class="auth-mode-area">
+              <div class="auth-pane">
+                <form method="post" novalidate>
+                  {% csrf_token %}
+                  <div class="auth-error-slot {% if not form.errors %}empty{% endif %}">
+                    <div class="alert alert-danger py-2">
+                      {% if form.errors %}
+                        {% for error in form.non_field_errors %}
+                          <div>{{ error }}</div>
+                        {% endfor %}
+                        {% for error in form.username.errors %}
+                          <div>{{ error }}</div>
+                        {% endfor %}
+                        {% for error in form.password.errors %}
+                          <div>{{ error }}</div>
+                        {% endfor %}
+                      {% else %}
+                        <div>&nbsp;</div>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label" for="id_username">Логин или эл. почта</label>
+                    {{ form.username }}
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="id_password">Пароль</label>
+                    {{ form.password }}
+                  </div>
+                  <button type="submit" class="btn btn-primary w-100 auth-submit-btn">Продолжить</button>
+                </form>
+              </div>
+            </div>
+
+            <p class="small text-muted mt-3 mb-0">Продолжая, вы соглашаетесь с правилами использования платформы.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

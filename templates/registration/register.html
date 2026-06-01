@@ -1,0 +1,250 @@
+{% extends "registration/auth_base.html" %}
+
+{% block title %}Регистрация | InternLAB{% endblock %}
+
+{% block content %}
+<style>
+  .auth-page {
+    position: relative;
+    width: 100vw;
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+
+  .auth-close-link {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    color: #1f2937;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(19, 35, 58, 0.16);
+    text-decoration: none;
+  }
+
+  .auth-close-link:hover {
+    background: #fff;
+    color: #111827;
+  }
+
+  .auth-promo-side {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(130deg, #6f2cff 0%, #4e40e5 48%, #8f2ff5 100%);
+    color: #fff;
+    padding: 2.4rem 2.2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100dvh;
+  }
+
+  .auth-promo-side::before,
+  .auth-promo-side::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+  }
+
+  .auth-promo-side::before {
+    width: 190px;
+    height: 190px;
+    top: -52px;
+    right: -58px;
+  }
+
+  .auth-promo-side::after {
+    width: 260px;
+    height: 260px;
+    left: -90px;
+    bottom: -95px;
+  }
+
+  .auth-promo-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .auth-promo-title {
+    font-size: clamp(2rem, 3.8vw, 3.1rem);
+    font-weight: 800;
+    line-height: 1.08;
+    margin-bottom: 1rem;
+  }
+
+  .auth-promo-text {
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 1.08rem;
+    margin-bottom: 1rem;
+  }
+
+  .auth-promo-list {
+    margin: 0;
+    padding-left: 1.05rem;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .auth-promo-list li {
+    margin-bottom: 0.45rem;
+  }
+
+  .auth-form-side {
+    background: var(--app-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.2rem 1.25rem;
+    min-height: 100dvh;
+    overflow-y: auto;
+  }
+
+  .auth-form-block {
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .auth-form-card {
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    box-shadow: 0 8px 22px rgba(19, 35, 58, 0.08);
+  }
+
+  :root[data-theme="dark"] .auth-form-card {
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+  }
+
+  @media (max-width: 991px) {
+    .auth-page {
+      height: auto;
+      min-height: auto;
+      overflow: visible;
+    }
+
+    .auth-promo-side {
+      min-height: 310px;
+      padding: 1.9rem 1.4rem;
+    }
+
+    .auth-form-side {
+      min-height: auto;
+      overflow-y: visible;
+      padding: 1.3rem 0.95rem 1.8rem;
+    }
+
+    .auth-form-block {
+      max-width: 620px;
+    }
+  }
+</style>
+
+<div class="auth-page row g-0">
+  <a class="auth-close-link" href="{% url 'core:home' %}" aria-label="Закрыть страницу регистрации">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M2.146 2.146a.5.5 0 0 1 .708 0L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854a.5.5 0 0 1 0-.708"/>
+    </svg>
+  </a>
+  <div class="col-lg-6 auth-promo-side">
+    <div class="auth-promo-content">
+      <h1 class="auth-promo-title">Создайте профиль и начните поиск</h1>
+      <p class="auth-promo-text">После регистрации вы сможете заполнить профиль и получать подходящие рекомендации.</p>
+      <ul class="auth-promo-list">
+        <li>Роли: студент или работодатель</li>
+        <li>Публикация вакансий и отклики</li>
+        <li>Простой учебный интерфейс для ВКР</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="col-lg-6 auth-form-side">
+    <div class="auth-form-block">
+      <div class="card auth-form-card">
+        <div class="card-body p-4 p-lg-4">
+          <h2 class="h3 mb-1">Регистрация</h2>
+          <p class="text-muted mb-4">Создайте аккаунт, чтобы начать работу в системе.</p>
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger py-2">
+                {% for error in form.non_field_errors %}
+                  <div>{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+              {{ form.email }}
+              {% for error in form.email.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            {% with selected_role=form.role.value|default:'student' %}
+              <div class="mb-3">
+                <label class="form-label d-block">{{ form.role.label }}</label>
+                <div class="role-choice-grid">
+                  <input class="role-choice-input" type="radio" name="role" id="register_role_student" value="student" {% if selected_role == 'student' %}checked{% endif %} required>
+                  <label class="role-choice-card" for="register_role_student">
+                    <span class="role-choice-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M8.211.5a.5.5 0 0 0-.422 0l-7 3.5A.5.5 0 0 0 .5 4.5v1a.5.5 0 0 0 .146.354L1.5 6.707V10.5a.5.5 0 0 0 .276.447l6 3a.5.5 0 0 0 .448 0l6-3A.5.5 0 0 0 14.5 10.5V6.707l.854-.853A.5.5 0 0 0 15.5 5.5v-1a.5.5 0 0 0-.289-.447zM8 1.559 14.191 4.5 8 7.441 1.809 4.5zM2.5 7.207l5.25 2.625v2.859L2.5 10.066zm6.25 5.484V9.832l5.25-2.625v2.859z"/>
+                      </svg>
+                    </span>
+                    <span class="role-choice-title">Студент</span>
+                    <span class="role-choice-subtitle">Ищу стажировку</span>
+                  </label>
+
+                  <input class="role-choice-input" type="radio" name="role" id="register_role_employer" value="employer" {% if selected_role == 'employer' %}checked{% endif %} required>
+                  <label class="role-choice-card" for="register_role_employer">
+                    <span class="role-choice-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M3 1a2 2 0 0 0-2 2v10.5A1.5 1.5 0 0 0 2.5 15H10v-2h3.5a1.5 1.5 0 0 0 1.5-1.5V6.914a2 2 0 0 0-.586-1.414l-2.914-2.914A2 2 0 0 0 10.086 2H10V1zm8 3.5V2.707L13.293 5H11.5a.5.5 0 0 1-.5-.5M3 2h6v2.5A1.5 1.5 0 0 0 10.5 6H14v5.5a.5.5 0 0 1-.5.5H10V3a1 1 0 0 0-1-1zm1 3.5a.5.5 0 0 1 .5-.5H7a.5.5 0 0 1 0 1H4.5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5H7a.5.5 0 0 1 0 1H4.5a.5.5 0 0 1-.5-.5m.5 1.5a.5.5 0 0 0 0 1H6a.5.5 0 0 0 0-1z"/>
+                      </svg>
+                    </span>
+                    <span class="role-choice-title">Работодатель</span>
+                    <span class="role-choice-subtitle">Ищу стажеров</span>
+                  </label>
+                </div>
+                {% for error in form.role.errors %}
+                  <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endwith %}
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+              {{ form.password1 }}
+              {% if form.password1.help_text %}
+                <div class="form-text">{{ form.password1.help_text|safe }}</div>
+              {% endif %}
+              {% for error in form.password1.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+              {{ form.password2 }}
+              {% for error in form.password2.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mb-2">Создать аккаунт</button>
+          </form>
+          <a href="{% url 'users:login' %}" class="btn btn-outline-secondary w-100">Уже есть аккаунт? Войти</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

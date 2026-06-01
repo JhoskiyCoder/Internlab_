@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/vacancies_public_list.css' %}?v=color-lift-1">
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div>
+    <h1 class="section-title">Вакансии</h1>
+    <p class="section-subtitle">Управляйте вакансиями, статусами и откликами кандидатов.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'vacancies:employer_create' %}">+ Разместить вакансию</a>
+</div>
+
+<div class="employer-vacancy-toolbar mb-4">
+  <div class="employer-vacancy-tabs">
+    {% for tab in status_tabs %}
+      <a
+        class="employer-vacancy-tab btn btn-sm {% if active_status == tab.value %}active btn-primary{% else %}btn-light border{% endif %}"
+        href="?status={{ tab.value }}"
+      >
+        {{ tab.label }}
+        <span class="employer-vacancy-tab-count badge rounded-pill {% if active_status == tab.value %}text-bg-light{% else %}text-bg-secondary{% endif %}">
+          {{ tab.count }}
+        </span>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="row g-4">
+  {% for card in vacancy_cards %}
+    {% with vacancy=card.vacancy %}
+      <div class="col-xl-6">
+        <div class="card employer-vacancy-card employer-vacancy-card-{{ vacancy.status }} h-100">
+          <div class="card-body d-flex flex-column p-4">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+              <div class="d-flex align-items-start gap-3 min-w-0">
+                <span class="employer-vacancy-logo">
+                  {% if vacancy.employer.logo %}
+                    <img src="{{ vacancy.employer.logo.url }}" alt="{{ vacancy.employer.company_name }}">
+                  {% else %}
+                    {{ vacancy.employer.company_name|slice:":1"|upper }}
+                  {% endif %}
+                </span>
+                <div class="min-w-0">
+                  <div class="employer-vacancy-company">{{ vacancy.employer.company_name }}</div>
+                  <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                    <h2 class="employer-vacancy-title mb-0">{{ vacancy.title }}</h2>
+                    {% if vacancy.status == 'published' %}
+                      <span class="badge employer-status-badge active">Активна</span>
+                    {% elif vacancy.status == 'draft' %}
+                      <span class="badge employer-status-badge draft">Черновик</span>
+                    {% elif vacancy.status == 'closed' %}
+                      <span class="badge employer-status-badge closed">Закрыта</span>
+                    {% else %}
+                      <span class="badge employer-status-badge archived">Архив</span>
+                    {% endif %}
+                  </div>
+                  <div class="d-flex flex-wrap align-items-center gap-2 employer-vacancy-meta">
+                    <span class="employer-meta-chip">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+                      </svg>
+                      {{ vacancy.display_location }}
+                    </span>
+                    <span class="employer-meta-chip">{{ vacancy.get_internship_type_display }}</span>
+                    <span class="employer-meta-chip muted">{{ card.published_label }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="dropdown">
+                <button class="employer-vacancy-more" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Действия">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/>
+                  </svg>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end employer-vacancy-menu">
+                  <a class="dropdown-item" href="{% url 'vacancies:employer_edit' vacancy.pk %}">
+                    <span class="employer-menu-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M12.146.854a.5.5 0 0 1 .708 0l2.292 2.292a.5.5 0 0 1 0 .708l-9.5 9.5a.5.5 0 0 1-.168.11l-4 1.5a.5.5 0 0 1-.642-.642l1.5-4a.5.5 0 0 1 .11-.168z"/>
+                      </svg>
+                    </span>
+                    Редактировать
+                  </a>
+                  {% if vacancy.status != 'published' %}
+                    <a class="dropdown-item" href="{% url 'vacancies:employer_publish' vacancy.pk %}">
+                      <span class="employer-menu-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M6.97 10.03a.75.75 0 0 0 1.08-.02l3.992-4.99a.75.75 0 0 0-1.17-.94L7.477 8.324 5.384 6.57a.75.75 0 1 0-.964 1.15z"/>
+                        </svg>
+                      </span>
+                      Опубликовать
+                    </a>
+                  {% endif %}
+                  {% if vacancy.status == 'published' %}
+                    <a class="dropdown-item" href="{% url 'vacancies:employer_close' vacancy.pk %}">
+                      <span class="employer-menu-icon warning">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                          <path d="M5.5 3.5A1.5 1.5 0 0 1 7 2h2a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 9 14H7a1.5 1.5 0 0 1-1.5-1.5z"/>
+                        </svg>
+                      </span>
+                      Приостановить
+                    </a>
+                  {% endif %}
+                  {% if vacancy.status != 'archived' %}
+                    <a class="dropdown-item text-danger" href="{% url 'vacancies:employer_archive' vacancy.pk %}">
+                      <span class="employer-menu-icon danger">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                          <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9.5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM5.5 5.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v7a.5.5 0 0 0 1 0z"/>
+                        </svg>
+                      </span>
+                      Архивировать
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              {% for requirement in vacancy.required_skills.all|slice:":4" %}
+                <span class="internship-list-skill-chip employer-skill-chip">{{ requirement.skill.name }}</span>
+              {% empty %}
+                <span class="internship-list-skill-chip employer-skill-chip">Навыки не указаны</span>
+              {% endfor %}
+              {% if vacancy.required_skills.all|length > 4 %}
+                <span class="internship-list-skill-chip employer-skill-chip">+{{ vacancy.required_skills.all|length|add:"-4" }}</span>
+              {% endif %}
+            </div>
+
+            <div class="employer-vacancy-stats mb-3">
+              <div>
+                <span class="employer-vacancy-stat-value">{{ vacancy.applications_count }}</span>
+                <span class="employer-vacancy-stat-label">Откликов</span>
+              </div>
+              <div>
+                <span class="employer-vacancy-stat-value">{{ vacancy.required_skills.all|length }}</span>
+                <span class="employer-vacancy-stat-label">Навыков</span>
+              </div>
+              <div>
+                <span class="employer-vacancy-stat-value">{{ vacancy.created_at|date:"d.m" }}</span>
+                <span class="employer-vacancy-stat-label">Создана</span>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-auto">
+              <a class="btn btn-primary flex-grow-1 employer-vacancy-open-btn" href="{% url 'vacancies:employer_vacancy_detail' vacancy.pk %}">Управлять</a>
+              <a class="btn btn-outline-secondary employer-vacancy-edit-btn" href="{% url 'vacancies:employer_edit' vacancy.pk %}" aria-label="Редактировать">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M12.146.854a.5.5 0 0 1 .708 0l2.292 2.292a.5.5 0 0 1 0 .708l-9.5 9.5a.5.5 0 0 1-.168.11l-4 1.5a.5.5 0 0 1-.642-.642l1.5-4a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.086 4 12 1.914z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endwith %}
+  {% empty %}
+    <div class="col-12">
+      <div class="dashboard-empty">
+        Вы еще не создали вакансии.
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

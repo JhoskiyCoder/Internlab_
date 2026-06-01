@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% load l10n static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/matching_recommendations.css' %}?v=color-lift-1">
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="section-title">Рекомендуемые вакансии</h1>
+    <p class="section-subtitle">Показаны 5 лучших вакансий по взвешенному совпадению навыков.</p>
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'vacancies:public_list' %}">Все вакансии</a>
+</div>
+
+{% if best_recommendation %}
+  <div class="card top-match-card mb-4">
+    <div class="card-body p-4 p-lg-5 position-relative">
+      <div class="row g-4 align-items-center">
+        <div class="col-lg-8">
+          <span class="top-match-chip">⭐ Лучшее совпадение</span>
+          <h2 class="top-match-title">{{ best_recommendation.vacancy.title }}</h2>
+          <p class="top-match-company">{{ best_recommendation.vacancy.employer.company_name }} · {{ best_recommendation.vacancy.display_location }}</p>
+          <p class="top-match-summary">
+            {% if best_recommendation.missing_skills %}
+              Есть недостающие навыки: {{ best_recommendation.missing_skills|join:", " }}.
+            {% else %}
+              Ваши навыки хорошо покрывают требования этой вакансии.
+            {% endif %}
+          </p>
+        </div>
+        <div class="col-lg-4">
+          <div class="d-flex flex-column flex-sm-row flex-lg-column gap-3 justify-content-lg-center align-items-stretch align-items-lg-end">
+            <div class="top-match-score">
+              <span class="top-match-score-value">{{ best_recommendation.score|floatformat:0|unlocalize }}%</span>
+              <div class="top-match-score-label">совпадение</div>
+            </div>
+            <a class="btn btn-light text-primary top-match-open-btn" href="{% url 'vacancies:public_detail' best_recommendation.vacancy.pk %}">
+              Открыть →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if other_recommendations %}
+    <div class="row g-3 align-items-stretch">
+      <div class="col-lg-8">
+        <div class="card other-matches-card h-100">
+          <div class="card-body p-3 p-md-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h2 class="h3 mb-0">Другие подходящие вакансии</h2>
+              <a class="btn btn-link text-decoration-none fw-semibold px-0" href="{% url 'vacancies:public_list' %}">Все вакансии</a>
+            </div>
+
+            <div class="d-grid gap-3">
+              {% for item in other_recommendations %}
+                <div class="other-match-row">
+                  <div class="d-flex align-items-start gap-3">
+                    <div style="width: 96px; flex: 0 0 96px;">
+                      <div class="score-ring" style="--score: {{ item.score|unlocalize }};" role="progressbar" aria-label="Процент совпадения" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ item.score|unlocalize }}">
+                        <svg class="score-ring-svg" viewBox="0 0 92 92" aria-hidden="true">
+                          <circle class="score-ring-track" cx="46" cy="46" r="32" pathLength="100"></circle>
+                          <circle class="score-ring-progress" cx="46" cy="46" r="32" pathLength="100"></circle>
+                        </svg>
+                        <div class="score-ring-inner">{{ item.score|floatformat:0|unlocalize }}%</div>
+                      </div>
+                    </div>
+
+                    <div class="flex-grow-1">
+                      <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                        <div>
+                          <h3 class="internship-title mb-1">{{ item.vacancy.title }}</h3>
+                          <div class="internship-company">{{ item.vacancy.employer.company_name }}</div>
+                        </div>
+                        {% if item.score > 89 %}
+                          <span class="other-match-badge recommended">Отличное совпадение</span>
+                        {% elif item.score > 79 %}
+                          <span class="other-match-badge recommended">Рекомендуем</span>
+                        {% elif item.score > 59 %}
+                          <span class="other-match-badge good">Хорошее совпадение</span>
+                        {% elif item.score > 39 %}
+                          <span class="other-match-badge good">Частичное совпадение</span>
+                        {% else %}
+                          <span class="other-match-badge good">Плохое совпадение</span>
+                        {% endif %}
+                      </div>
+
+                      <div class="text-muted mb-2">
+                        {% if item.missing_skills %}
+                          Недостающие навыки: {{ item.missing_skills|join:", " }}
+                        {% else %}
+                          Ваши навыки хорошо покрывают требования вакансии.
+                        {% endif %}
+                      </div>
+
+                      <div class="d-flex flex-wrap align-items-center gap-3 internship-meta">
+                        <span>📍 {{ item.vacancy.display_location }}</span>
+                        <span>{{ item.vacancy.get_internship_type_display }}</span>
+                      </div>
+                    </div>
+
+                    <a class="other-match-arrow" href="{% url 'vacancies:public_detail' item.vacancy.pk %}" aria-label="Открыть вакансию">→</a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="recommendations-side-space d-grid gap-3">
+          <div class="skill-wheel-card">
+            <h3 class="h6 mb-1">Карта навыков</h3>
+            <div class="skill-wheel-chart-wrap mb-2">
+              <canvas id="skillWheelChart"></canvas>
+            </div>
+            <div class="skill-wheel-markers">
+              <span class="skill-wheel-marker skill-wheel-marker-you">Вы</span>
+              <span class="skill-wheel-marker skill-wheel-marker-market">Рынок</span>
+            </div>
+          </div>
+          <div class="next-skills-card">
+            <h3 class="next-skills-title">
+              <span class="next-skills-title-icon">◎</span>
+              Недостающие навыки
+            </h3>
+            {% if next_skills %}
+              <div class="d-grid gap-2">
+                {% for item in next_skills %}
+                  <div class="next-skill-item">
+                    <div class="next-skill-left">
+                      <span class="next-skill-dot {{ item.priority }}"></span>
+                      <div>
+                        <div class="next-skill-name">{{ item.name }}</div>
+                        <div class="next-skill-meta">{{ item.hint }}</div>
+                      </div>
+                    </div>
+                    <span class="next-skill-badge {{ item.priority }}">{{ item.priority_label }}</span>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-muted small mb-0">Вы уже закрываете основные рыночные требования.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% else %}
+  <div class="alert alert-info mb-0">Пока нет опубликованных вакансий для рекомендаций.</div>
+{% endif %}
+
+{{ skill_wheel_categories|json_script:"skill-wheel-categories" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  (function () {
+    const dataEl = document.getElementById("skill-wheel-categories");
+    const canvas = document.getElementById("skillWheelChart");
+    if (!dataEl || !canvas || !window.Chart) return;
+
+    const categories = JSON.parse(dataEl.textContent || "[]");
+    const labels = categories.map((item) => item.name);
+    const myValues = categories.map((item) => item.score);
+    const marketValues = categories.map((item) => item.market_score || 0);
+
+    function normalizeForRadar(values) {
+      const maxValue = Math.max(...values, 0);
+      if (!maxValue) return values;
+      return values.map((value) => Math.round((value / maxValue) * 100));
+    }
+
+    const myChartValues = normalizeForRadar(myValues);
+    const marketChartValues = normalizeForRadar(marketValues);
+
+    const rootTheme = document.documentElement.getAttribute("data-theme");
+    const isDark = rootTheme === "dark";
+    const labelColor = isDark ? "#d6deeb" : "#4b5565";
+    const gridColor = isDark ? "rgba(128, 145, 170, 0.35)" : "rgba(107, 122, 145, 0.2)";
+    const pointColor = "#6f42c1";
+
+    new Chart(canvas, {
+      type: "radar",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Рынок",
+            data: marketChartValues,
+            fill: true,
+            backgroundColor: "rgba(132, 153, 230, 0.18)",
+            borderColor: "rgba(132, 153, 230, 0.9)",
+            pointBackgroundColor: "rgba(132, 153, 230, 1)",
+            pointBorderColor: "rgba(132, 153, 230, 1)",
+            pointRadius: 2.8,
+          },
+          {
+            label: "Вы",
+            data: myChartValues,
+            fill: true,
+            backgroundColor: "rgba(111, 66, 193, 0.2)",
+            borderColor: pointColor,
+            pointBackgroundColor: pointColor,
+            pointBorderColor: pointColor,
+            pointRadius: 3,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                const realValues = ctx.dataset.label === "Вы" ? myValues : marketValues;
+                const realValue = realValues[ctx.dataIndex] || 0;
+                return `${ctx.dataset.label}: ${realValue}%`;
+              },
+            },
+          },
+        },
+        scales: {
+          r: {
+            min: 0,
+            max: 100,
+            ticks: {
+              display: false,
+              stepSize: 20,
+            },
+            grid: { color: gridColor },
+            angleLines: { color: gridColor },
+            pointLabels: {
+              color: labelColor,
+              font: {
+                size: 11,
+                weight: "600",
+              },
+            },
+          },
+        },
+      },
+    });
+  })();
+</script>
+{% endblock %}

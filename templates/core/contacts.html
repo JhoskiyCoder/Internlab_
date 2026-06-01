@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <h1 class="section-title mb-2">Контакты</h1>
+    <p class="section-subtitle mb-4">Связь по вопросам проекта и демонстрации платформы.</p>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="p-3 border rounded-3 h-100">
+          <div class="text-muted small mb-1">Email</div>
+          <div><a href="mailto:internlab@example.com">internlab@example.com</a></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="p-3 border rounded-3 h-100">
+          <div class="text-muted small mb-1">Дополнительно</div>
+          <div class="text-muted">По всем вопросам можно использовать форму обратной связи в учебной среде проекта.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

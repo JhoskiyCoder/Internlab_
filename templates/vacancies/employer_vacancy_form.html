@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="vacancy-form-page">
+  <div class="vacancy-form-hero mb-4">
+    <div>
+      <span class="vacancy-form-kicker">Вакансия</span>
+      <h1 class="section-title mt-2 mb-2">{{ title }}</h1>
+      <p class="section-subtitle mb-0">Заполните данные и выберите ключевые навыки.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'vacancies:employer_list' %}">Назад к вакансиям</a>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="row g-4 align-items-start">
+      <div class="col-lg-8">
+        <div class="vacancy-form-card">
+          <div class="vacancy-form-section">
+            <div class="vacancy-form-section-title">
+              <span>1</span>
+              <h2>Основная информация</h2>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+              {{ form.title }}
+              {% for error in form.title.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-0">
+              <label class="form-label" for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+              {{ form.description }}
+              {% for error in form.description.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+
+          <div class="vacancy-form-divider"></div>
+
+          <div class="vacancy-form-section">
+            <div class="vacancy-form-section-title">
+              <span>2</span>
+              <h2>Условия стажировки</h2>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="{{ form.location.id_for_label }}">{{ form.location.label }}</label>
+                {{ form.location }}
+                {% for error in form.location.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="{{ form.internship_type.id_for_label }}">{{ form.internship_type.label }}</label>
+                {{ form.internship_type }}
+                {% for error in form.internship_type.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <div class="vacancy-form-divider"></div>
+
+          <div class="vacancy-form-section">
+            <div class="vacancy-form-section-title">
+              <span>3</span>
+              <h2>Требования</h2>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.requirements_text.id_for_label }}">{{ form.requirements_text.label }}</label>
+              {{ form.requirements_text }}
+              {% for error in form.requirements_text.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+
+          </div>
+
+          {% if show_skill_picker %}
+            <div class="vacancy-form-divider"></div>
+
+            <div class="vacancy-form-section">
+              <div class="vacancy-form-section-title">
+                <span>4</span>
+                <h2>Ключевые навыки</h2>
+              </div>
+
+              <div class="vacancy-skill-category-list vacancy-create-category-list mb-3">
+                {% for category in form.skill_catalog %}
+                  <button
+                    type="button"
+                    class="vacancy-skill-category-btn js-vacancy-create-category-btn"
+                    data-category="{{ category.key }}"
+                  >
+                    {{ category.label }}
+                  </button>
+                {% endfor %}
+              </div>
+
+              <div class="vacancy-skill-tech-panel vacancy-create-skill-panel">
+                {% for category in form.skill_catalog %}
+                  <div class="vacancy-skill-tech-grid js-vacancy-create-skill-group {% if not forloop.first %}d-none{% endif %}" data-category-group="{{ category.key }}">
+                    {% for technology in category.technologies %}
+                      {% if technology.id %}
+                        <input
+                          type="checkbox"
+                          class="vacancy-create-skill-check"
+                          name="{{ form.selected_skills.html_name }}"
+                          value="{{ technology.id }}"
+                          id="vacancy-skill-{{ category.key }}-{{ technology.id }}"
+                          data-skill-id="{{ technology.id }}"
+                          {% if technology.selected %}checked{% endif %}
+                        >
+                        <div class="vacancy-skill-tech-card vacancy-create-skill-card">
+                          <label class="vacancy-create-skill-main" for="vacancy-skill-{{ category.key }}-{{ technology.id }}">
+                            <span class="vacancy-skill-tech-logo">
+                              {% if technology.icon_url %}
+                                <img src="{{ technology.icon_url }}" alt="{{ technology.name }}">
+                              {% else %}
+                                <span>{{ technology.short }}</span>
+                              {% endif %}
+                            </span>
+                            <span class="vacancy-skill-tech-name">{{ technology.name }}</span>
+                          </label>
+                          <div class="vacancy-create-skill-settings">
+                            <label class="vacancy-create-level">
+                              <span>Уровень</span>
+                              <select
+                                name="skill_level_{{ technology.id }}"
+                                class="form-select form-select-sm js-vacancy-create-skill-control"
+                                data-skill-id="{{ technology.id }}"
+                              >
+                                <option value="1" {% if technology.level == "1" %}selected{% endif %}>1</option>
+                                <option value="2" {% if technology.level == "2" %}selected{% endif %}>2</option>
+                                <option value="3" {% if technology.level == "3" %}selected{% endif %}>3</option>
+                                <option value="4" {% if technology.level == "4" %}selected{% endif %}>4</option>
+                                <option value="5" {% if technology.level == "5" %}selected{% endif %}>5</option>
+                              </select>
+                            </label>
+                            <label class="vacancy-create-critical">
+                              <input
+                                type="checkbox"
+                                name="skill_critical_{{ technology.id }}"
+                                class="form-check-input js-vacancy-create-skill-control"
+                                data-skill-id="{{ technology.id }}"
+                                {% if technology.is_critical %}checked{% endif %}
+                              >
+                              <span>Критичный</span>
+                            </label>
+                          </div>
+                        </div>
+                      {% else %}
+                        <span class="vacancy-skill-tech-card disabled">
+                          <span class="vacancy-skill-tech-logo"><span>{{ technology.short }}</span></span>
+                          <span class="vacancy-skill-tech-name">{{ technology.name }}</span>
+                        </span>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                {% endfor %}
+              </div>
+
+              {% for error in form.selected_skills.errors %}
+                <div class="text-danger small mt-2">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="vacancy-form-divider"></div>
+
+          <div class="vacancy-form-section">
+            <div class="vacancy-form-section-title">
+              <span>{% if show_skill_picker %}5{% else %}4{% endif %}</span>
+              <h2>Статус</h2>
+            </div>
+
+            {{ form.status }}
+            <div class="mb-0">
+              <div class="form-label">{{ form.status.label }}</div>
+              <div class="vacancy-status-grid">
+                {% for option in form.status_options %}
+                  <button
+                    type="button"
+                    class="vacancy-status-card js-vacancy-status-btn"
+                    data-status="{{ option.value }}"
+                  >
+                    <span class="vacancy-status-dot"></span>
+                    <strong>{{ option.label }}</strong>
+                  </button>
+                {% endfor %}
+              </div>
+              {% for error in form.status.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="vacancy-form-actions mt-3">
+          <button type="submit" class="btn btn-primary">{{ submit_text }}</button>
+          <a class="btn btn-outline-secondary" href="{% url 'vacancies:employer_list' %}">Отмена</a>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <aside class="vacancy-form-side">
+          <div class="vacancy-preview-card mb-3">
+            <div class="vacancy-preview-top">
+              <span class="vacancy-preview-logo">IL</span>
+              <div>
+                <strong>Как будет выглядеть карточка</strong>
+                <small>Название, компания, город, формат и навыки</small>
+              </div>
+            </div>
+            <div class="vacancy-preview-line wide"></div>
+            <div class="vacancy-preview-line"></div>
+            <div class="vacancy-preview-chips">
+              <span>Python</span>
+              <span>Django</span>
+              <span>SQL</span>
+            </div>
+          </div>
+
+          <div class="vacancy-form-hint">
+            <h2>Памятка</h2>
+            <ul>
+              <li>Пишите конкретное название роли.</li>
+              <li>Город и формат указываются отдельно.</li>
+              <li>Уровни навыков можно уточнить после создания.</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </form>
+</section>
+
+<script>
+  (function () {
+    var statusInput = document.getElementById("id_status");
+    var statusButtons = Array.from(document.querySelectorAll(".js-vacancy-status-btn"));
+    var categoryButtons = Array.from(document.querySelectorAll(".js-vacancy-create-category-btn"));
+    var skillGroups = Array.from(document.querySelectorAll(".js-vacancy-create-skill-group"));
+    var skillChecks = Array.from(document.querySelectorAll(".vacancy-create-skill-check"));
+    var skillControls = Array.from(document.querySelectorAll(".js-vacancy-create-skill-control"));
+
+    function activateStatus(statusValue) {
+      statusButtons.forEach(function (btn) {
+        btn.classList.toggle("active", btn.dataset.status === statusValue);
+      });
+      statusInput.value = statusValue || "draft";
+    }
+
+    if (statusInput && statusButtons.length) {
+      statusButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          activateStatus(btn.dataset.status);
+        });
+      });
+
+      activateStatus(statusInput.value || "draft");
+    }
+
+    function activateSkillCategory(categoryKey) {
+      categoryButtons.forEach(function (btn) {
+        btn.classList.toggle("active", btn.dataset.category === categoryKey);
+      });
+      skillGroups.forEach(function (group) {
+        group.classList.toggle("d-none", group.dataset.categoryGroup !== categoryKey);
+      });
+    }
+
+    if (categoryButtons.length && skillGroups.length) {
+      categoryButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          activateSkillCategory(btn.dataset.category);
+        });
+      });
+      activateSkillCategory(categoryButtons[0].dataset.category);
+    }
+
+    function syncSkillOptions(skillId, sourceControl) {
+      if (!skillId) {
+        return;
+      }
+
+      skillChecks.forEach(function (checkbox) {
+        if (checkbox.dataset.skillId === skillId) {
+          checkbox.checked = true;
+        }
+      });
+
+      if (sourceControl && sourceControl.name.indexOf("skill_level_") === 0) {
+        skillControls.forEach(function (control) {
+          if (control !== sourceControl && control.name === sourceControl.name) {
+            control.value = sourceControl.value;
+          }
+        });
+      }
+
+      if (sourceControl && sourceControl.name.indexOf("skill_critical_") === 0) {
+        skillControls.forEach(function (control) {
+          if (control !== sourceControl && control.name === sourceControl.name) {
+            control.checked = sourceControl.checked;
+          }
+        });
+      }
+    }
+
+    skillChecks.forEach(function (checkbox) {
+      checkbox.addEventListener("change", function () {
+        skillChecks.forEach(function (otherCheckbox) {
+          if (otherCheckbox !== checkbox && otherCheckbox.dataset.skillId === checkbox.dataset.skillId) {
+            otherCheckbox.checked = checkbox.checked;
+          }
+        });
+      });
+    });
+
+    skillControls.forEach(function (control) {
+      control.addEventListener("change", function () {
+        syncSkillOptions(control.dataset.skillId, control);
+      });
+    });
+  })();
+</script>
+{% endblock %}
